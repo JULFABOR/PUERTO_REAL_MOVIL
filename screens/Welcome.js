@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, ImageBackground } from
 
 export default function Welcome({ navigation }) {
   return (
-    <ImageBackground source={require('../assets/splash-icon.png')} style={styles.background}>
+    <ImageBackground source={require('../assets/splash.png')} style={styles.background} resizeMode="cover">
       <View style={styles.container}>
         <Image source={require('../assets/logo.png')} style={styles.logo} />
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
@@ -22,25 +22,26 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: 70,
   },
   logo: {
-    width: 150,
-    height: 150,
-    marginBottom: 50,
+    width: 210,
+    height: 210,
+    transform: [{ rotate: '-11deg' }],
+    tintColor: '#F3F38B',
   },
   button: {
-    backgroundColor: '#922b21',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
     paddingVertical: 15,
-    paddingHorizontal: 60,
-    borderRadius: 5,
-    marginTop: 20,
+    borderRadius: 30,
+    width: '130%',
+    alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 18,
+    color: '#000',
+    fontSize: 15,
     fontWeight: 'bold',
   },
 });
