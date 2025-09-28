@@ -212,6 +212,9 @@ export default function ControlCompras({ navigation }) {
             <TouchableOpacity style={styles.addButton} onPress={handleAddPurchase}>
                 <FontAwesome name="plus" size={30} color={MAROON} />
             </TouchableOpacity>
+            <TouchableOpacity style={styles.proveedoresButton} onPress={() => navigation.navigate('GestionProveedores')}>
+                <Text style={styles.proveedoresButtonText}>Gestión de Proveedores</Text>
+            </TouchableOpacity>
             <View style={styles.searchBarContainer}>
                 <FontAwesome name="search" size={20} color="#fff" style={styles.searchIcon} />
                 <TextInput
@@ -466,6 +469,19 @@ const styles = StyleSheet.create({
   // Controles Superiores
   topControlsContainer: { flexDirection: 'row', width: '90%', marginTop: 20, alignItems: 'center', justifyContent: 'space-between' },
   addButton: { backgroundColor: YELLOW, padding: 15, borderRadius: 50, justifyContent: 'center', alignItems: 'center' },
+  proveedoresButton: {
+    backgroundColor: YELLOW,
+    padding: 15,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 15,
+  },
+  proveedoresButtonText: {
+    color: MAROON,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
   searchBarContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(146, 43, 33, 0.85)', borderRadius: 25, flex: 1, marginLeft: 15 },
   searchIcon: { marginHorizontal: 15 },
   searchBar: { color: '#fff', fontSize: 16, flex: 1, paddingVertical: 15 },

@@ -1,15 +1,31 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ImageBackground } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ImageBackground, Animated } from 'react-native';
 
 export default function Welcome({ navigation }) {
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start(() => {
+        navigation.navigate('Login');
+      });
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [fadeAnim, navigation]);
+
   return (
-    <ImageBackground source={require('../assets/splash.png')} style={styles.background} resizeMode="cover">
-      <View style={styles.container}>
+    <ImageBackground source={require('../assets/cork-946087.jpg')} style={styles.background} resizeMode="cover">
+      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <Image source={require('../assets/logo.png')} style={styles.logo} />
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
           <Text style={styles.buttonText}>Ingresar</Text>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
     </ImageBackground>
   );
 }
@@ -25,6 +41,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 70,
+    width: '100%',
   },
   logo: {
     width: 210,

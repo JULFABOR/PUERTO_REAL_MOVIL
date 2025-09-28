@@ -2,22 +2,27 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   Image,
   ImageBackground,
   SafeAreaView,
   ScrollView,
   StatusBar,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 import { LinearGradient } from 'expo-linear-gradient';
+import { FontAwesome } from '@expo/vector-icons';
+import CustomAlert from '../components/CustomAlert';
+import Input from '../components/Input';
 
 // --- Colores y Estilos Reutilizados ---
-const MAROON = '#922b21';
+const MUSTARD = '#E8A83C';
+const TERRACOTTA = '#d96c3d';
 const DARK_GREY = '#3A3A3A';
 const YELLOW = '#F3F38B';
 const LOGO_STYLE = {
@@ -26,21 +31,33 @@ const LOGO_STYLE = {
   transform: [{ rotate: '-11deg' }],
   tintColor: '#F3F38B',
 };
-const BACKGROUND_IMAGE = require('../assets/splash.png');
+const BACKGROUND_IMAGE = require('../assets/splash1.jpg');
 
 // --- Componente Principal ---
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const showAlert = (title, message) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Por favor ingrese ambos campos.");
+      showAlert("Error", "Por favor ingrese ambos campos.");
       return;
     }
+    setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      Alert.alert("Login exitoso", "Has iniciado sesión correctamente.");
+      showAlert("Login exitoso", "Has iniciado sesión correctamente.");
       navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
     } catch (error) {
       let errorMessage = "Hubo un problema al iniciar sesión.";
@@ -62,8 +79,9 @@ export default function Login({ navigation }) {
           errorMessage = error.message;
           break;
       }
-      Alert.alert("Error de inicio de sesión", errorMessage);
+      showAlert("Error de inicio de sesión", errorMessage);
     }
+    setLoading(false);
   };
 
   return (
@@ -71,59 +89,72 @@ export default function Login({ navigation }) {
       <StatusBar barStyle="light-content" />
       <ImageBackground source={BACKGROUND_IMAGE} resizeMode="cover" style={styles.backgroundImage}>
         <LinearGradient
-          colors={['transparent', MAROON]}
+          colors={['transparent', MUSTARD]}
           style={styles.gradient}
           locations={[0.66, 0.68]}
         />
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <Image source={require('../assets/logo.png')} style={styles.logo} />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <Image source={require('../assets/logo.png')} style={styles.logo} />
 
-          <View style={styles.contentBox}>
-            <View style={styles.tabSwitch}>
-              <View style={styles.tabSlider} />
-              <Text style={styles.tabTextActive}>Ingresar</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('SignUp')} style={styles.tabItem}>
-                <Text style={styles.tabTextInactive}>Registrarse</Text>
+            <View style={styles.contentBox}>
+              <View style={styles.tabSwitch}>
+                <View style={styles.tabSlider} />
+                <Text style={styles.tabTextActive}>Ingresar</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('SignUp')} style={styles.tabItem}>
+                  <Text style={styles.tabTextInactive}>Registrarse</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.welcomeText}>
+                ¡Bienvenido a <Text style={{ color: TERRACOTTA }}>Puerto Real!</Text>
+              </Text>
+
+              <Input
+                icon="envelope"
+                placeholder="Correo Electrónico"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                accessibilityLabel="Correo Electrónico"
+                accessibilityHint="Ingrese su correo electrónico"
+              />
+              <View style={styles.passwordContainer}>
+                <Input
+                  placeholder="Contraseña"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  accessibilityLabel="Contraseña"
+                  accessibilityHint="Ingrese su contraseña"
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.showPasswordButton}>
+                  <FontAwesome name={showPassword ? 'eye-slash' : 'eye'} size={20} color={DARK_GREY} />
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+                <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
               </TouchableOpacity>
+
+              <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
+                {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.loginButtonText}>Ingresar</Text>}
+              </TouchableOpacity>
+
             </View>
 
-            <Text style={styles.welcomeText}>
-              ¡Bienvenido a <Text style={{ color: MAROON }}>Puerto Real!</Text>
-            </Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Correo Electrónico"
-              placeholderTextColor="#888"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Contraseña"
-              placeholderTextColor="#888"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-
-            <TouchableOpacity>
-              <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.loginButtonText}>Ingresar</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.signupContainer} onPress={() => navigation.navigate('SignUp')}>
-            <Text style={styles.signupText}>
-              ¿No tienes cuenta? <Text style={{ color: YELLOW, fontWeight: 'bold' }}>Registrate</Text>
-            </Text>
-          </TouchableOpacity>
-        </ScrollView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+        <CustomAlert
+          visible={alertVisible}
+          title={alertTitle}
+          message={alertMessage}
+          onClose={() => setAlertVisible(false)}
+        />
       </ImageBackground>
     </SafeAreaView>
   );
@@ -133,7 +164,7 @@ export default function Login({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: MAROON,
+    backgroundColor: MUSTARD,
   },
   backgroundImage: {
     flex: 1,
@@ -179,7 +210,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '50%',
     height: '100%',
-    backgroundColor: MAROON,
+    backgroundColor: TERRACOTTA,
     borderRadius: 50,
     left: 5,
   },
@@ -194,12 +225,14 @@ const styles = StyleSheet.create({
     zIndex: 1,
     flex: 1,
     textAlign: 'center',
+    fontFamily: 'Lato-Bold',
   },
   tabTextInactive: {
     color: '#fff',
     fontWeight: 'normal',
     fontSize: 16,
     zIndex: 1,
+    fontFamily: 'Lato-Regular',
   },
   welcomeText: {
     fontSize: 22,
@@ -207,41 +240,39 @@ const styles = StyleSheet.create({
     color: DARK_GREY,
     marginBottom: 20,
     textAlign: 'center',
+    fontFamily: 'Lato-Bold',
   },
-  input: {
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     width: '100%',
+  },
+  showPasswordButton: {
+    position: 'absolute',
+    right: 15,
     height: 50,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 10,
-    marginBottom: 15,
-    paddingHorizontal: 15,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    justifyContent: 'center',
   },
   forgotPasswordText: {
     color: DARK_GREY,
     fontSize: 14,
     marginTop: 10,
     marginBottom: 20,
+    alignSelf: 'flex-start',
+    fontFamily: 'Lato-Regular',
   },
   loginButton: {
     width: '100%',
-    backgroundColor: MAROON,
+    backgroundColor: TERRACOTTA,
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
+    alignSelf: 'center',
   },
   loginButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  signupContainer: {
-    paddingVertical: 15,
-  },
-  signupText: {
-    color: '#fff',
-    fontSize: 16,
+    fontFamily: 'Lato-Bold',
   },
 });

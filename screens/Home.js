@@ -20,7 +20,7 @@ const YELLOW = '#F3F38B';
 const LOGO_STYLE = {
   tintColor: '#F3F38B',
 };
-const BACKGROUND_IMAGE = require('../assets/splash.png');
+const BACKGROUND_IMAGE = require('../assets/winery-7513835.jpg');
 
 // --- Componente Principal ---
 export default function Home({ navigation }) {
