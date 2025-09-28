@@ -1,35 +1,29 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Navigation from './navigation/Navigation';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 
-// Keep the splash screen visible while we fetch resources
+// Mantener la pantalla de carga visible mientras se cargan las fuentes
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    // ===================================================================
-    // IMPORTANTE: Para que esto funcione, debes hacer lo siguiente:
-    // 1. Crea una carpeta llamada 'fonts' dentro de tu carpeta 'assets'.
-    // 2. Descarga los archivos de la fuente Lato (o la que prefieras).
-    //    Puedes encontrarlos en Google Fonts: https://fonts.google.com/specimen/Lato
-    // 3. Descarga y guarda los archivos 'Lato-Regular.ttf' y 'Lato-Bold.ttf' en la carpeta 'assets/fonts'.
-    // ===================================================================
+    // Fuentes originales
     'Lato-Regular': require('./assets/fonts/Lato-Regular.ttf'),
     'Lato-Bold': require('./assets/fonts/Lato-Bold.ttf'),
+    
+    // --- NUEVAS FUENTES ---
+    // Asegúrate de haber descargado y colocado estos archivos en la carpeta /assets/fonts
+    'PlayfairDisplay-Regular': require('./assets/fonts/PlayfairDisplay-Regular.ttf'),
+    'Roboto-Regular': require('./assets/fonts/Roboto-Regular.ttf'),
+    'Roboto-Bold': require('./assets/fonts/Roboto-Bold.ttf'),
   });
 
   useEffect(() => {
     async function prepare() {
-      try {
-        // Aquí puedes precargar otros recursos si es necesario
-      } catch (e) {
-        console.warn(e);
-      } finally {
-        // Hide the splash screen when the fonts are loaded
-        if (fontsLoaded) {
-          await SplashScreen.hideAsync();
-        }
+      if (fontsLoaded) {
+        // Ocultar la pantalla de carga una vez que las fuentes estén listas
+        await SplashScreen.hideAsync();
       }
     }
 
@@ -37,7 +31,7 @@ export default function App() {
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return null; // Render nothing while fonts are loading
+    return null; // No renderizar nada hasta que las fuentes se hayan cargado
   }
 
   return <Navigation />;

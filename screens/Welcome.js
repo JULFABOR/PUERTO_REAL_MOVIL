@@ -20,12 +20,14 @@ export default function Welcome({ navigation }) {
 
   return (
     <ImageBackground source={require('../assets/cork-946087.jpg')} style={styles.background} resizeMode="cover">
-      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-        <Image source={require('../assets/logo.png')} style={styles.logo} />
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.buttonText}>Ingresar</Text>
-        </TouchableOpacity>
-      </Animated.View>
+      <View style={styles.overlay}>
+        <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+          <Image source={require('../assets/logo.png')} style={styles.logo} />
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.buttonText}>Ingresar</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
     </ImageBackground>
   );
 }
@@ -33,14 +35,18 @@ export default function Welcome({ navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)', // Capa para oscurecer el fondo
     justifyContent: 'center',
     alignItems: 'center',
   },
   container: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'space-between', // Posición original
     alignItems: 'center',
-    padding: 70,
+    paddingVertical: 70,
     width: '100%',
   },
   logo: {
@@ -50,15 +56,15 @@ const styles = StyleSheet.create({
     tintColor: '#F3F38B',
   },
   button: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: 'rgba(217, 108, 61, 0.7)', // Ligera transparencia
     paddingVertical: 15,
-    borderRadius: 30,
-    width: '130%',
+    borderRadius: 25, // Más redondeado
+    width: '70%', // Nuevo ancho
     alignItems: 'center',
   },
   buttonText: {
-    color: '#000',
-    fontSize: 15,
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 18, // Mismo tamaño que los otros botones
+    fontFamily: 'Roboto-Bold', // Misma fuente que los otros botones
   },
 });
