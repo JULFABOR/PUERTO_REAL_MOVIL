@@ -13,6 +13,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 import { FontAwesome } from '@expo/vector-icons';
@@ -126,7 +127,7 @@ export default function SignUp({ navigation }) {
             <ScrollView contentContainerStyle={styles.scrollContainer}>
               <Image source={require('../assets/logo.png')} style={styles.logo} />
 
-              <View style={styles.contentBox}>
+              <BlurView intensity={100} tint="light" style={styles.contentBox}>
                 <View style={styles.tabSwitch}>
                   <View style={[styles.tabSlider, { right: 5 }]} />
                   <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.tabItem}>
@@ -173,7 +174,7 @@ export default function SignUp({ navigation }) {
                   {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.registerButtonText}>Registrarse</Text>}
                 </TouchableOpacity>
 
-              </View>
+              </BlurView>
 
             </ScrollView>
           </KeyboardAvoidingView>
@@ -193,11 +194,12 @@ const styles = StyleSheet.create({
   logo: { ...LOGO_STYLE, alignSelf: 'center', marginBottom: 20 },
   contentBox: {
     width: '90%',
-    backgroundColor: '#FAF9F6',
+    backgroundColor: 'rgba(250, 249, 246, 0.15)',
     padding: 25,
     alignItems: 'center',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    overflow: 'hidden',
   },
   tabSwitch: {
     flexDirection: 'row',

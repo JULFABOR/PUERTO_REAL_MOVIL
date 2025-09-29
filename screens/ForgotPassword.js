@@ -13,6 +13,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 import CustomAlert from '../components/CustomAlert';
@@ -76,7 +77,7 @@ export default function ForgotPassword({ navigation }) {
             <ScrollView contentContainerStyle={styles.scrollContainer}>
               <Image source={require('../assets/logo.png')} style={styles.logo} />
 
-              <View style={styles.contentBox}>
+              <BlurView intensity={100} tint="light" style={styles.contentBox}>
                 <Text style={styles.welcomeText}>Recuperar Contraseña</Text>
                 <Text style={styles.infoText}>Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</Text>
 
@@ -92,7 +93,7 @@ export default function ForgotPassword({ navigation }) {
                 <TouchableOpacity style={styles.resetButton} onPress={handlePasswordReset} disabled={loading}>
                   {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.resetButtonText}>Restablecer Contraseña</Text>}
                 </TouchableOpacity>
-              </View>
+              </BlurView>
 
               <TouchableOpacity style={styles.backContainer} onPress={() => navigation.goBack()}>
                 <Text style={styles.backText}>Volver</Text>
@@ -137,11 +138,12 @@ const styles = StyleSheet.create({
   },
   contentBox: {
     width: '90%',
-    backgroundColor: '#FAF9F6', // Blanco roto cálido
+    backgroundColor: 'rgba(250, 249, 246, 0.15)',
     padding: 25,
     alignItems: 'center',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    overflow: 'hidden',
   },
   welcomeText: {
     fontSize: 30, // Ajuste de tamaño para la nueva fuente
