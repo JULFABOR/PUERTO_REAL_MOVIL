@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Dimensions,
+  Animated,
+  Easing,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -40,6 +43,12 @@ export default function Login({ navigation }) {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
+  const [buttonTextVisible, setButtonTextVisible] = useState(true);
+
+  // Animación circular
+  const circleAnim = useRef(new Animated.Value(0)).current;
+  const { width, height } = Dimensions.get('window');
+  const maxDiameter = Math.sqrt(width * width + height * height) * 2;
 
   const showAlert = (title, message) => {
     setAlertTitle(title);
@@ -53,19 +62,34 @@ export default function Login({ navigation }) {
       return;
     }
     setLoading(true);
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
-    } catch (error) {
-      let errorMessage = "Hubo un problema al iniciar sesión.";
-      if (error.code === 'auth/invalid-email' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
-        errorMessage = "La contraseña o el correo son incorrectos.";
-      } else if (error.code === 'auth/network-request-failed') {
-        errorMessage = "Error de conexión, por favor intenta más tarde.";
+    setButtonTextVisible(false);
+
+    // Animación circular
+    Animated.timing(circleAnim, {
+      toValue: maxDiameter,
+      duration: 700,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: false,
+    }).start(async () => {
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        navigation.reset({ index: 0, routes: [{ name: 'Home', params: { animateFade: true } }] });
+        // Reinicia la animación si vuelves a login
+        circleAnim.setValue(0);
+        setButtonTextVisible(true);
+      } catch (error) {
+        circleAnim.setValue(0);
+        setButtonTextVisible(true);
+        let errorMessage = "Hubo un problema al iniciar sesión.";
+        if (error.code === 'auth/invalid-email' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+          errorMessage = "La contraseña o el correo son incorrectos.";
+        } else if (error.code === 'auth/network-request-failed') {
+          errorMessage = "Error de conexión, por favor intenta más tarde.";
+        }
+        showAlert("Error de inicio de sesión", errorMessage);
       }
-      showAlert("Error de inicio de sesión", errorMessage);
-    }
-    setLoading(false);
+      setLoading(false);
+    });
   };
 
   return (
@@ -73,6 +97,30 @@ export default function Login({ navigation }) {
       <StatusBar barStyle="light-content" />
       <ImageBackground source={BACKGROUND_IMAGE} resizeMode="cover" style={styles.backgroundImage}>
         <View style={styles.overlay}>
+          {/* --- Círculo animado sobre toda la pantalla --- */}
+          <Animated.View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              width: circleAnim,
+              height: circleAnim,
+              borderRadius: maxDiameter / 2,
+              backgroundColor: TERRACOTTA,
+              transform: [
+                { translateX: Animated.multiply(circleAnim, -0.5) },
+                { translateY: Animated.multiply(circleAnim, -0.5) },
+              ],
+              opacity: circleAnim.interpolate({
+                inputRange: [0, maxDiameter * 0.7, maxDiameter],
+                outputRange: [0.7, 0.9, 1],
+              }),
+              zIndex: 100,
+            }}
+          />
+          {/* --- Fin círculo animado --- */}
+
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={{ flex: 1 }}
@@ -117,9 +165,12 @@ export default function Login({ navigation }) {
                   <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
-                  {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.loginButtonText}>Ingresar</Text>}
-                </TouchableOpacity>
+                {/* Botón sin círculo animado aquí */}
+                <View style={{ position: 'relative', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                  <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading || !buttonTextVisible}>
+                    {loading ? <ActivityIndicator color="#fff" /> : buttonTextVisible && <Text style={styles.loginButtonText}>Ingresar</Text>}
+                  </TouchableOpacity>
+                </View>
 
               </BlurView>
 
@@ -208,11 +259,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto-Regular',
   },
   welcomeText: {
-    fontSize: 30, // Ajuste de tamaño para la nueva fuente
+    fontSize: 30,
     color: DARK_GREY,
     marginBottom: 25,
     textAlign: 'center',
-    fontFamily: 'Roboto-Bold', // Fuente Sans-Serif fuerte
+    fontFamily: 'Roboto-Bold',
   },
   passwordContainer: {
     width: '100%',
@@ -224,7 +275,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     padding: 10,
-    opacity: 0.6, // Opacidad para consistencia
+    opacity: 0.6,
   },
   forgotPasswordText: {
     color: DARK_GREY,

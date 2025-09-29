@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   ImageBackground,
   ScrollView,
   Platform,
+  Animated,
 } from 'react-native';
 import { signOut } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
@@ -22,11 +23,24 @@ const OFF_WHITE = '#FAF9F6';
 const BACKGROUND_IMAGE = require('../assets/vine-9039366.jpg');
 
 // --- Componente Principal ---
-export default function Home({ navigation }) {
+export default function Home({ navigation, route }) {
   const user = auth.currentUser;
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
+
+  // Animación de desvanecimiento
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (route?.params?.animateFade) {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 700,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [route?.params?.animateFade]);
 
   const showAlert = (title, message) => {
     setAlertTitle(title);
@@ -37,14 +51,12 @@ export default function Home({ navigation }) {
   const handleLogOut = async () => {
     try {
       await signOut(auth);
-      // No mostramos alerta, simplemente navegamos fuera.
       navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
     } catch (error) {
       showAlert("Error", "Hubo un problema al cerrar sesión.");
     }
   };
 
-  // Extrae el nombre del correo para un saludo más amigable
   const displayName = user?.email?.split('@')[0] || 'Usuario';
 
   return (
@@ -52,6 +64,16 @@ export default function Home({ navigation }) {
       <StatusBar barStyle="light-content" />
       <ImageBackground source={BACKGROUND_IMAGE} resizeMode="cover" style={styles.backgroundImage}>
         <View style={styles.overlay}>
+          {/* --- Animación de desvanecimiento --- */}
+          <Animated.View
+            pointerEvents="none"
+            style={{
+              ...StyleSheet.absoluteFillObject,
+              backgroundColor: TERRACOTTA,
+              opacity: fadeAnim,
+              zIndex: 10,
+            }}
+          />
           {/* --- Encabezado --- */}
           <View style={styles.header}>
             <View>
@@ -64,25 +86,18 @@ export default function Home({ navigation }) {
           </View>
 
           <ScrollView contentContainerStyle={styles.scrollContainer}>
-            {/* --- Título del Panel --- */}
             <Text style={styles.panelTitle}>Panel de Control</Text>
-
-            {/* --- Tarjeta de Navegación 1 --- */}
             <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('ControlCompras')}>
               <FontAwesome name="shopping-cart" size={40} color={TERRACOTTA} style={styles.cardIcon} />
               <Text style={styles.cardTitle}>Control de Compras</Text>
               <Text style={styles.cardDescription}>Registra y gestiona tus compras de insumos.</Text>
             </TouchableOpacity>
-
-            {/* --- Tarjeta de Navegación 2 --- */}
             <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('GestionProveedores')}>
               <FontAwesome name="truck" size={40} color={TERRACOTTA} style={styles.cardIcon} />
               <Text style={styles.cardTitle}>Gestión de Proveedores</Text>
               <Text style={styles.cardDescription}>Administra la información de tus proveedores.</Text>
             </TouchableOpacity>
-            
           </ScrollView>
-          
           <CustomAlert
             visible={alertVisible}
             title={alertTitle}
