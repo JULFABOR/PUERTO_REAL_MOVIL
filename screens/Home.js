@@ -1,136 +1,167 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  Alert,
-  Image,
-  ImageBackground,
   SafeAreaView,
   StatusBar,
+  ImageBackground,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import { signOut } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 import { FontAwesome } from '@expo/vector-icons';
+import CustomAlert from '../components/CustomAlert';
 
 // --- Colores y Estilos Reutilizados ---
-const MAROON = '#922b21';
-const YELLOW = '#F3F38B';
-const LOGO_STYLE = {
-  tintColor: '#F3F38B',
-};
-const BACKGROUND_IMAGE = require('../assets/winery-7513835.jpg');
+const TERRACOTTA = '#d96c3d';
+const DARK_GREY = '#3A3A3A';
+const OFF_WHITE = '#FAF9F6';
+const BACKGROUND_IMAGE = require('../assets/vine-9039366.jpg');
 
 // --- Componente Principal ---
 export default function Home({ navigation }) {
   const user = auth.currentUser;
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const showAlert = (title, message) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
 
   const handleLogOut = async () => {
     try {
       await signOut(auth);
-      Alert.alert("Sesión cerrada", "Has cerrado sesión correctamente.");
-      navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+      // No mostramos alerta, simplemente navegamos fuera.
+      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
     } catch (error) {
-      Alert.alert("Error", "Hubo un problema al cerrar sesión.");
+      showAlert("Error", "Hubo un problema al cerrar sesión.");
     }
   };
 
+  // Extrae el nombre del correo para un saludo más amigable
+  const displayName = user?.email?.split('@')[0] || 'Usuario';
+
   return (
-    <ImageBackground source={BACKGROUND_IMAGE} resizeMode="cover" style={styles.backgroundImage}>
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.userInfoContainer}>
-            <FontAwesome name="user-circle" size={24} color="white" />
-            <Text style={styles.userName}>{user?.displayName || user?.email}</Text>
-        </View>
-
-        <View style={styles.mainContent}>
-            <View style={styles.maroonBox}>
-                <TouchableOpacity style={styles.comprasButton} onPress={() => navigation.navigate('ControlCompras')}>
-                    <Text style={styles.comprasButtonText}>Control de Compras</Text>
-                </TouchableOpacity>
-                <Image source={require('../assets/logo.png')} style={styles.logo} />
+      <ImageBackground source={BACKGROUND_IMAGE} resizeMode="cover" style={styles.backgroundImage}>
+        <View style={styles.overlay}>
+          {/* --- Encabezado --- */}
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.headerTitle}>¡Hola, {displayName}!</Text>
+              <Text style={styles.headerSubtitle}>Bienvenido a Puerto Real</Text>
             </View>
-        </View>
+            <TouchableOpacity onPress={handleLogOut}>
+              <FontAwesome name="sign-out" size={30} color={TERRACOTTA} />
+            </TouchableOpacity>
+          </View>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogOut}>
-          <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    </ImageBackground>
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+            {/* --- Título del Panel --- */}
+            <Text style={styles.panelTitle}>Panel de Control</Text>
+
+            {/* --- Tarjeta de Navegación 1 --- */}
+            <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('ControlCompras')}>
+              <FontAwesome name="shopping-cart" size={40} color={TERRACOTTA} style={styles.cardIcon} />
+              <Text style={styles.cardTitle}>Control de Compras</Text>
+              <Text style={styles.cardDescription}>Registra y gestiona tus compras de insumos.</Text>
+            </TouchableOpacity>
+
+            {/* --- Tarjeta de Navegación 2 --- */}
+            <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('GestionProveedores')}>
+              <FontAwesome name="truck" size={40} color={TERRACOTTA} style={styles.cardIcon} />
+              <Text style={styles.cardTitle}>Gestión de Proveedores</Text>
+              <Text style={styles.cardDescription}>Administra la información de tus proveedores.</Text>
+            </TouchableOpacity>
+            
+          </ScrollView>
+          
+          <CustomAlert
+            visible={alertVisible}
+            title={alertTitle}
+            message={alertMessage}
+            onClose={() => setAlertVisible(false)}
+          />
+        </View>
+      </ImageBackground>
+    </SafeAreaView>
   );
 }
 
 // --- Hoja de Estilos ---
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: DARK_GREY,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
   backgroundImage: {
     flex: 1,
   },
-  safeArea: {
+  overlay: {
     flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  header: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  userInfoContainer: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-  },
-  userName: {
-    marginLeft: 10,
-    fontSize: 16,
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  mainContent: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: '100%',
-  },
-  maroonBox: {
-    width: '85%',
-    backgroundColor: 'rgba(146, 43, 33, 0.85)', // Maroon with transparency
-    borderRadius: 30, // semi-oval
-    paddingVertical: 30,
     paddingHorizontal: 20,
-    alignItems: 'center',
+    paddingBottom: 10,
   },
-  comprasButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 25, // semi-oval
-    paddingVertical: 15,
-    width: '90%',
-    alignItems: 'center',
-    marginBottom: 20, // Space between button and logo
+  headerTitle: {
+    fontFamily: 'Roboto-Bold',
+    fontSize: 24,
+    color: '#FFFFFF',
+    textTransform: 'capitalize',
   },
-  comprasButtonText: {
-    color: '#000000',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    ...LOGO_STYLE,
-  },
-  logoutButton: {
-    backgroundColor: YELLOW,
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 25, // semi-oval
-    marginVertical: 30,
-  },
-  logoutButtonText: {
-    color: MAROON,
+  headerSubtitle: {
+    fontFamily: 'Roboto-Regular',
     fontSize: 16,
-    fontWeight: 'bold',
+    color: '#E0E0E0',
+  },
+  scrollContainer: {
+    padding: 20,
+  },
+  panelTitle: {
+    fontFamily: 'Roboto-Bold',
+    fontSize: 28,
+    color: '#FFFFFF',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  card: {
+    backgroundColor: OFF_WHITE,
+    borderRadius: 15,
+    padding: 25,
+    marginBottom: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
+  },
+  cardIcon: {
+    marginBottom: 15,
+  },
+  cardTitle: {
+    fontFamily: 'Roboto-Bold',
+    fontSize: 20,
+    color: DARK_GREY,
+    marginBottom: 5,
+  },
+  cardDescription: {
+    fontFamily: 'Roboto-Regular',
+    fontSize: 14,
+    color: DARK_GREY,
+    textAlign: 'center',
   },
 });

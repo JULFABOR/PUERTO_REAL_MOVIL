@@ -32,13 +32,14 @@ function Navigation() {
       <Stack.Navigator 
         initialRouteName={user ? 'Home' : 'Welcome'}
         screenOptions={{
+          headerShown: false, // Oculta el header en todas las pantallas por defecto
           cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
         }}
       >
-        <Stack.Screen name="Welcome" component={Welcome} options={{ headerShown: false }} />
-        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-        <Stack.Screen name="SignUp" component={SignUp} options={{ headerShown: false }} />
-        <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{ headerShown: false }} />
+        <Stack.Screen name="Welcome" component={Welcome} />
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="SignUp" component={SignUp} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="ControlCompras" component={ControlCompras} />
         <Stack.Screen name="GestionProveedores" component={GestionProveedores} />
