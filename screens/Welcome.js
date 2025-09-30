@@ -1,47 +1,59 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ImageBackground, Animated } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function Welcome({ navigation }) {
   const logoAnim = useRef(new Animated.Value(0)).current;
   const buttonAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(1)).current; // Animación para el desvanecimiento de salida
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  // Función para manejar la navegación con desvanecimiento
+  // This effect runs every time the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      // 1. Reset all animations to their initial state
+      fadeAnim.setValue(1);
+      logoAnim.setValue(0);
+      buttonAnim.setValue(0);
+
+      // 2. Start the entrance animation
+      const entranceAnimation = Animated.stagger(300, [
+        Animated.timing(logoAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+          delay: 200,
+        }),
+        Animated.timing(buttonAnim, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+      ]);
+      entranceAnimation.start();
+
+      // 3. Set up the automatic navigation timer
+      const timer = setTimeout(() => {
+        navigateWithFade();
+      }, 5500);
+
+      // 4. Return a cleanup function to run when the screen loses focus
+      return () => {
+        clearTimeout(timer);
+        entranceAnimation.stop();
+      };
+    }, [navigation])
+  );
+
+  // Function to handle navigation with a fade-out effect
   const navigateWithFade = () => {
     Animated.timing(fadeAnim, {
       toValue: 0,
-      duration: 500, // Duración del desvanecimiento
+      duration: 500,
       useNativeDriver: true,
     }).start(() => {
       navigation.navigate('Login');
     });
   };
-
-  // Efecto para las animaciones de entrada
-  useEffect(() => {
-    Animated.stagger(300, [
-      Animated.timing(logoAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-        delay: 200,
-      }),
-      Animated.timing(buttonAnim, {
-        toValue: 1,
-        duration: 700,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [logoAnim, buttonAnim]);
-
-  // Efecto para la navegación automática
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      navigateWithFade();
-    }, 5500); // 5.5s de espera + 0.5s de fade = 6s total
-
-    return () => clearTimeout(timer);
-  }, [navigation]);
 
   const logoTranslateY = logoAnim.interpolate({
     inputRange: [0, 1],

@@ -143,6 +143,8 @@ const styles = StyleSheet.create({
     color: '#E0E0E0',
   },
   scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
     padding: 20,
   },
   panelTitle: {

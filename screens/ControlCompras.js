@@ -10,11 +10,11 @@ import {
   StatusBar,
   Modal,
   ScrollView,
-  Alert,
   ImageBackground,
   Platform,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import CustomAlert from '../components/CustomAlert';
 
 // --- Colores y Estilos Reutilizados ---
 const TERRACOTTA = '#d96c3d';
@@ -33,7 +33,7 @@ const dummyPurchases = [
 ];
 
 // --- Componente de Formulario Reutilizable ---
-const PurchaseForm = ({ isEdit, purchaseData, onSave, onClose }) => {
+const PurchaseForm = ({ isEdit, purchaseData, onSave, onClose, showAlert }) => {
   const [proveedor, setProveedor] = useState(isEdit ? purchaseData.proveedor : '');
   const [items, setItems] = useState(isEdit ? purchaseData.items : []);
   const [itemName, setItemName] = useState('');
@@ -47,7 +47,7 @@ const PurchaseForm = ({ isEdit, purchaseData, onSave, onClose }) => {
       setItemName('');
       setItemPrice('');
     } else {
-      Alert.alert("Error", "Ingrese nombre y precio para el producto.");
+      showAlert("Error", "Ingrese nombre y precio para el producto.");
     }
   };
 
@@ -68,7 +68,7 @@ const PurchaseForm = ({ isEdit, purchaseData, onSave, onClose }) => {
         </View>
         <ScrollView style={styles.modalBody}>
           <Text style={styles.formLabel}>Proveedor</Text>
-          <TouchableOpacity style={styles.formButton} onPress={() => Alert.alert("Seleccionar Proveedor", "Funcionalidad no implementada.")}>
+          <TouchableOpacity style={styles.formButton} onPress={() => showAlert("Info", "Funcionalidad no implementada.")}>
             <Text style={styles.formButtonText}>{proveedor || 'Seleccionar un proveedor'}</Text>
             <FontAwesome name="chevron-down" color={DARK_GREY} />
           </TouchableOpacity>
@@ -116,10 +116,19 @@ export default function ControlCompras({ navigation }) {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [editingPurchase, setEditingPurchase] = useState(null);
   const [selectedPurchase, setSelectedPurchase] = useState(null);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const showAlert = (title, message) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
 
   const handleSavePurchase = (proveedor, items, importe) => {
     if (!proveedor || items.length === 0) {
-      Alert.alert("Error", "Proveedor y productos son obligatorios.");
+      showAlert("Error", "Proveedor y productos son obligatorios.");
       return;
     }
     const newPurchase = {
@@ -151,9 +160,9 @@ export default function ControlCompras({ navigation }) {
     if (!selectedPurchase) return;
     setPurchases(purchases.filter(p => p.id !== selectedPurchase.id));
     setIsDeleteModalVisible(false);
-    Alert.alert("Éxito", "Compra eliminada correctamente.");
+    showAlert("Éxito", "Compra eliminada correctamente.");
   };
-  const handleExportToPdf = () => { Alert.alert("Exportar a PDF", "Funcionalidad no implementada."); };
+  const handleExportToPdf = () => { showAlert("Info", "Funcionalidad no implementada."); };
 
   const renderPurchaseItem = ({ item }) => (
     <View style={styles.card}>
@@ -194,12 +203,12 @@ export default function ControlCompras({ navigation }) {
 
       {/* --- Modales --- */}
       <Modal visible={isAddModalVisible} onRequestClose={() => setIsAddModalVisible(false)} transparent={true} animationType="fade">
-        <PurchaseForm onSave={handleSavePurchase} onClose={() => setIsAddModalVisible(false)} />
+        <PurchaseForm onSave={handleSavePurchase} onClose={() => setIsAddModalVisible(false)} showAlert={showAlert} />
       </Modal>
 
       {editingPurchase && (
         <Modal visible={isEditModalVisible} onRequestClose={() => setIsEditModalVisible(false)} transparent={true} animationType="fade">
-          <PurchaseForm isEdit purchaseData={editingPurchase} onSave={handleUpdatePurchase} onClose={() => setIsEditModalVisible(false)} />
+          <PurchaseForm isEdit purchaseData={editingPurchase} onSave={handleUpdatePurchase} onClose={() => setIsEditModalVisible(false)} showAlert={showAlert} />
         </Modal>
       )}
 
@@ -252,6 +261,13 @@ export default function ControlCompras({ navigation }) {
         </View>
       </Modal>
 
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+      />
+
     </SafeAreaView>
   );
 }
@@ -269,7 +285,7 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, height: 45, fontFamily: 'Roboto-Regular', fontSize: 16, color: DARK_GREY },
   addButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: TERRACOTTA, paddingHorizontal: 15, height: 45, borderRadius: 10, marginLeft: 10 },
   addButtonText: { fontFamily: 'Roboto-Bold', color: '#fff', fontSize: 16, marginLeft: 5 },
-  listContainer: { paddingHorizontal: 20, paddingBottom: 20 },
+  listContainer: { paddingHorizontal: 20, paddingBottom: 20, paddingTop: 10 },
   card: { backgroundColor: OFF_WHITE, borderRadius: 15, marginBottom: 15, flexDirection: 'row', alignItems: 'center', padding: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 },
   cardContent: { flex: 1 },
   cardTitle: { fontFamily: 'Roboto-Bold', fontSize: 18, color: DARK_GREY, marginBottom: 8 },

@@ -19,6 +19,7 @@ import { auth } from '../src/config/firebaseConfig';
 import { FontAwesome } from '@expo/vector-icons';
 import CustomAlert from '../components/CustomAlert';
 import Input from '../components/Input';
+import { validarNombreApellido, validarEmail } from '../components/validaciones';
 
 // --- Colores y Estilos Reutilizados ---
 const TERRACOTTA = '#d96c3d';
@@ -50,6 +51,11 @@ export default function SignUp({ navigation }) {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
+
+  // Para mostrar leyendas solo cuando el input está enfocado
+  const [nombreFocused, setNombreFocused] = useState(false);
+  const [apellidoFocused, setApellidoFocused] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
 
   const [isLengthValid, setLengthValid] = useState(false);
   const [hasUppercase, setHasUppercase] = useState(false);
@@ -89,11 +95,27 @@ export default function SignUp({ navigation }) {
       showAlert("Error", "Todos los campos son obligatorios.");
       return;
     }
+    if (!validarNombreApellido(nombre)) {
+      showAlert("Error", "El nombre solo puede contener letras y espacios.");
+      return;
+    }
+    if (!validarNombreApellido(apellido)) {
+      showAlert("Error", "El apellido solo puede contener letras y espacios.");
+      return;
+    }
+    if (!validarEmail(email)) {
+      showAlert("Error", "El correo electrónico no tiene un formato válido.");
+      return;
+    }
     if (!passwordsMatch) {
+      setPassword('');
+      setConfirmPassword('');
       showAlert("Error", "Las contraseñas no coinciden.");
       return;
     }
     if (!allRequirementsMet) {
+      setPassword('');
+      setConfirmPassword('');
       showAlert("Error", "La contraseña no cumple con los requisitos de seguridad.");
       return;
     }
@@ -138,9 +160,49 @@ export default function SignUp({ navigation }) {
 
                 <Text style={styles.welcomeText}>Crea tu cuenta</Text>
 
-                <Input icon="user" placeholder="Nombre" value={nombre} onChangeText={setNombre} />
-                <Input icon="user" placeholder="Apellido" value={apellido} onChangeText={setApellido} />
-                <Input icon="envelope" placeholder="Correo Electrónico" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+                <Input
+                  icon="user"
+                  placeholder="Nombre"
+                  value={nombre}
+                  onChangeText={setNombre}
+                  onlyLetters
+                  onFocusChange={setNombreFocused}
+                />
+                {nombreFocused && (
+                  <View style={styles.requirementsContainer}>
+                    <Text style={styles.requirementTitle}>El nombre debe contener:</Text>
+                    <Text style={[styles.requirement, validarNombreApellido(nombre) ? styles.requirementMet : null]}>○ Solo letras y espacios</Text>
+                  </View>
+                )}
+                <Input
+                  icon="user"
+                  placeholder="Apellido"
+                  value={apellido}
+                  onChangeText={setApellido}
+                  onlyLetters
+                  onFocusChange={setApellidoFocused}
+                />
+                {apellidoFocused && (
+                  <View style={styles.requirementsContainer}>
+                    <Text style={styles.requirementTitle}>El apellido debe contener:</Text>
+                    <Text style={[styles.requirement, validarNombreApellido(apellido) ? styles.requirementMet : null]}>○ Solo letras y espacios</Text>
+                  </View>
+                )}
+                <Input
+                  icon="envelope"
+                  placeholder="Correo Electrónico"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  onFocusChange={setEmailFocused}
+                />
+                {emailFocused && (
+                  <View style={styles.requirementsContainer}>
+                    <Text style={styles.requirementTitle}>El correo debe tener:</Text>
+                    <Text style={[styles.requirement, validarEmail(email) ? styles.requirementMet : null]}>○ Formato válido (ejemplo@dominio.com)</Text>
+                  </View>
+                )}
                 
                 <View style={styles.passwordContainer}>
                   <Input placeholder="Contraseña" value={password} onChangeText={setPassword} secureTextEntry={!showPasswords} />
@@ -263,6 +325,28 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto-Regular',
   },
   passwordRequirementMet: {
+    color: '#2E7D32',
+    fontFamily: 'Roboto-Bold',
+  },
+  requirementsContainer: {
+    width: '100%',
+    paddingHorizontal: 5,
+    opacity: 0.7,
+    marginTop: -15,
+    marginBottom: 10,
+  },
+  requirementTitle: {
+    fontSize: 14,
+    color: DARK_GREY,
+    marginBottom: 3,
+    fontFamily: 'Roboto-Bold',
+  },
+  requirement: {
+    fontSize: 13,
+    color: DARK_GREY,
+    fontFamily: 'Roboto-Regular',
+  },
+  requirementMet: {
     color: '#2E7D32',
     fontFamily: 'Roboto-Bold',
   },

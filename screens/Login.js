@@ -22,6 +22,7 @@ import { auth } from '../src/config/firebaseConfig';
 import { FontAwesome } from '@expo/vector-icons';
 import CustomAlert from '../components/CustomAlert';
 import Input from '../components/Input';
+import { validarEmail } from '../components/validaciones';
 
 // --- Colores y Estilos Reutilizados ---
 const TERRACOTTA = '#d96c3d';
@@ -61,35 +62,38 @@ export default function Login({ navigation }) {
       showAlert("Error", "Por favor ingrese ambos campos.");
       return;
     }
+    if (!validarEmail(email)) {
+      showAlert("Error", "El correo electrónico no tiene un formato válido.");
+      return;
+    }
     setLoading(true);
     setButtonTextVisible(false);
 
-    // Animación circular
-    Animated.timing(circleAnim, {
-      toValue: maxDiameter,
-      duration: 700,
-      easing: Easing.out(Easing.quad),
-      useNativeDriver: false,
-    }).start(async () => {
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+
+      Animated.timing(circleAnim, {
+        toValue: maxDiameter,
+        duration: 700,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: false,
+      }).start(() => {
         navigation.reset({ index: 0, routes: [{ name: 'Home', params: { animateFade: true } }] });
-        // Reinicia la animación si vuelves a login
         circleAnim.setValue(0);
         setButtonTextVisible(true);
-      } catch (error) {
-        circleAnim.setValue(0);
-        setButtonTextVisible(true);
-        let errorMessage = "Hubo un problema al iniciar sesión.";
-        if (error.code === 'auth/invalid-email' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
-          errorMessage = "La contraseña o el correo son incorrectos.";
-        } else if (error.code === 'auth/network-request-failed') {
-          errorMessage = "Error de conexión, por favor intenta más tarde.";
-        }
-        showAlert("Error de inicio de sesión", errorMessage);
-      }
+        setLoading(false);
+      });
+    } catch (error) {
       setLoading(false);
-    });
+      setButtonTextVisible(true);
+      let errorMessage = "Hubo un problema al iniciar sesión.";
+      if (error.code === 'auth/invalid-email' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+        errorMessage = "La contraseña o el correo son incorrectos.";
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = "Error de conexión, por favor intenta más tarde.";
+      }
+      showAlert("Error de inicio de sesión", errorMessage);
+    }
   };
 
   return (

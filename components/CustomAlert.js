@@ -1,7 +1,19 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { FontAwesome } from '@expo/vector-icons';
+
+const TERRACOTTA = '#d96c3d';
+const DARK_GREY = '#3A3A3A';
+const SUCCESS_GREEN = '#2E7D32';
+const ERROR_RED = '#C62828';
 
 const CustomAlert = ({ visible, title, message, onClose }) => {
+  // Detecta si es error por el título, pero no lo muestra
+  const isError = title.toLowerCase().includes('error');
+  const iconName = isError ? 'exclamation-triangle' : 'check-circle';
+  const iconColor = isError ? ERROR_RED : SUCCESS_GREEN;
+
   return (
     <Modal
       animationType="fade"
@@ -10,16 +22,16 @@ const CustomAlert = ({ visible, title, message, onClose }) => {
       onRequestClose={onClose}
     >
       <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <Text style={styles.modalTitle}>{title}</Text>
-          <Text style={styles.modalText}>{message}</Text>
+        <BlurView intensity={100} tint="light" style={styles.modalViewCompact}>
+          <FontAwesome name={iconName} size={32} color={iconColor} style={styles.iconTop} />
+          <Text style={styles.modalTextCompact}>{message}</Text>
           <TouchableOpacity
-            style={{ ...styles.button, backgroundColor: '#922b21' }}
+            style={styles.buttonCompact}
             onPress={onClose}
           >
-            <Text style={styles.textStyle}>Cerrar</Text>
+            <Text style={styles.textStyleCompact}>Cerrar</Text>
           </TouchableOpacity>
-        </View>
+        </BlurView>
       </View>
     </Modal>
   );
@@ -28,45 +40,48 @@ const CustomAlert = ({ visible, title, message, onClose }) => {
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
-  modalView: {
-    margin: 20,
-    backgroundColor: "white",
-    borderRadius: 20,
-    padding: 35,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5
+  modalViewCompact: {
+    width: '80%',
+    borderRadius: 14,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    overflow: 'hidden',
   },
-  button: {
-    borderRadius: 20,
-    padding: 10,
-    elevation: 2
+  iconTop: {
+    alignSelf: 'center',
+    marginBottom: 8,
   },
-  textStyle: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center"
+  modalTextCompact: {
+    fontSize: 15,
+    fontFamily: 'Roboto-Regular',
+    color: DARK_GREY,
+    textAlign: 'center',
+    flexShrink: 1,
+    lineHeight: 20,
+    alignSelf: 'center',
+    marginBottom: 10,
   },
-  modalTitle: {
-    marginBottom: 15,
-    textAlign: "center",
-    fontSize: 20,
-    fontWeight: 'bold'
+  buttonCompact: {
+    backgroundColor: TERRACOTTA,
+    borderRadius: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    elevation: 2,
+    alignSelf: 'center',
+    marginTop: 6,
+    opacity: 0.92,
   },
-  modalText: {
-    marginBottom: 15,
-    textAlign: "center"
-  }
+  textStyleCompact: {
+    color: 'white',
+    fontFamily: 'Roboto-Bold',
+    textAlign: 'center',
+    fontSize: 13,
+  },
 });
 
 export default CustomAlert;

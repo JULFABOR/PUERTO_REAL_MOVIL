@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,8 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 import CustomAlert from '../components/CustomAlert';
 import Input from '../components/Input';
+import { validarEmail } from '../components/validaciones';
+import { useFocusEffect } from '@react-navigation/native';
 
 // --- Colores y Estilos Reutilizados ---
 const TERRACOTTA = '#d96c3d';
@@ -39,6 +41,19 @@ export default function ForgotPassword({ navigation }) {
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
 
+  useFocusEffect(
+    useCallback(() => {
+      // Restablecer el estado cuando la pantalla se enfoca
+      setAlertVisible(false);
+      setEmail('');
+      setLoading(false);
+
+      return () => {
+        // Limpieza opcional si es necesario al salir de la pantalla
+      };
+    }, [])
+  );
+
   const showAlert = (title, message) => {
     setAlertTitle(title);
     setAlertMessage(message);
@@ -50,19 +65,26 @@ export default function ForgotPassword({ navigation }) {
       showAlert("Error", "Por favor ingrese su correo electrónico.");
       return;
     }
+    if (!validarEmail(email)) {
+      showAlert("Error", "El correo electrónico no tiene un formato válido.");
+      return;
+    }
     setLoading(true);
     try {
       await sendPasswordResetEmail(auth, email);
       showAlert("Correo Enviado", "Se ha enviado un correo para restablecer su contraseña. Revisa tu bandeja de entrada y spam.");
-      navigation.navigate('Login');
+      // Pequeña pausa antes de navegar para que el usuario vea la alerta
+      setTimeout(() => {
+        navigation.navigate('Login');
+      }, 3000);
     } catch (error) {
       let errorMessage = "Hubo un problema al enviar el correo.";
       if (error.code === 'auth/invalid-email' || error.code === 'auth/user-not-found') {
         errorMessage = "No se encontró un usuario con este correo.";
       }
       showAlert("Error", errorMessage);
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

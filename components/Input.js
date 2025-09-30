@@ -6,22 +6,39 @@ const TERRACOTTA = '#d96c3d';
 const LIGHT_GREY = '#E0E0E0';
 const DARK_GREY = '#3A3A3A';
 
-const Input = ({ icon, placeholder, value, onChangeText, secureTextEntry, keyboardType, autoCapitalize, accessibilityLabel, accessibilityHint }) => {
+const Input = ({ icon, placeholder, value, onChangeText, secureTextEntry, keyboardType, autoCapitalize, accessibilityLabel, accessibilityHint, onlyLetters, onFocusChange }) => {
   const [isFocused, setIsFocused] = useState(false);
 
-  const handleFocus = () => setIsFocused(true);
-  const handleBlur = () => setIsFocused(false);
+  const handleFocus = () => {
+    setIsFocused(true);
+    if (onFocusChange) onFocusChange(true);
+  };
+  const handleBlur = () => {
+    setIsFocused(false);
+    if (onFocusChange) onFocusChange(false);
+  };
+
+  // Si onlyLetters está activo, filtra el texto en tiempo real
+  const handleChangeText = (text) => {
+    if (onlyLetters) {
+      // Permite letras, acentos, ñ y espacios
+      const filtrado = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+      onChangeText(filtrado);
+    } else {
+      onChangeText(text);
+    }
+  };
 
   const borderColor = isFocused ? TERRACOTTA : LIGHT_GREY;
 
   return (
-    <View style={[styles.inputContainer, { borderBottomColor: borderColor }]}>
+    <View style={[styles.inputContainer, { borderBottomColor: borderColor }]}> 
       <TextInput
         style={styles.input}
         placeholder={placeholder}
         placeholderTextColor="#888"
         value={value}
-        onChangeText={onChangeText}
+        onChangeText={handleChangeText}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}

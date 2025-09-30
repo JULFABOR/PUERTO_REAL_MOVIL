@@ -10,11 +10,11 @@ import {
   StatusBar,
   Modal,
   ScrollView,
-  Alert,
   ImageBackground,
   Platform,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import CustomAlert from '../components/CustomAlert';
 
 // --- Colores y Estilos Reutilizados ---
 const TERRACOTTA = '#d96c3d';
@@ -33,7 +33,7 @@ const dummyProveedores = [
 ];
 
 // --- Componente de Formulario Reutilizable ---
-const ProveedorForm = ({ isEdit, proveedorData, onSave, onClose }) => {
+const ProveedorForm = ({ isEdit, proveedorData, onSave, onClose, showAlert }) => {
   const [name, setName] = useState(isEdit ? proveedorData.name : '');
   const [contactPerson, setContactPerson] = useState(isEdit ? proveedorData.contactPerson : '');
   const [phone, setPhone] = useState(isEdit ? proveedorData.phone : '');
@@ -41,7 +41,7 @@ const ProveedorForm = ({ isEdit, proveedorData, onSave, onClose }) => {
 
   const handleSave = () => {
     if (!name || !contactPerson || !phone || !email) {
-      Alert.alert("Error", "Todos los campos son obligatorios.");
+      showAlert("Error", "Todos los campos son obligatorios.");
       return;
     }
     onSave({ name, contactPerson, phone, email });
@@ -85,6 +85,15 @@ export default function GestionProveedores({ navigation }) {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [editingProveedor, setEditingProveedor] = useState(null);
   const [deletingProveedor, setDeletingProveedor] = useState(null);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const showAlert = (title, message) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
 
   const handleSaveProveedor = (data) => {
     const newProveedor = {
@@ -93,6 +102,7 @@ export default function GestionProveedores({ navigation }) {
     };
     setProveedores([newProveedor, ...proveedores]);
     setIsAddModalVisible(false);
+    showAlert("Éxito", "Proveedor agregado correctamente.");
   };
 
   const handleUpdateProveedor = (data) => {
@@ -103,6 +113,7 @@ export default function GestionProveedores({ navigation }) {
     setProveedores(updatedProveedores);
     setEditingProveedor(null);
     setIsEditModalVisible(false);
+    showAlert("Éxito", "Proveedor actualizado correctamente.");
   };
 
   const handleEdit = (proveedor) => { setEditingProveedor(proveedor); setIsEditModalVisible(true); };
@@ -113,6 +124,7 @@ export default function GestionProveedores({ navigation }) {
     setProveedores(proveedores.filter(p => p.id !== deletingProveedor.id));
     setIsDeleteModalVisible(false);
     setDeletingProveedor(null);
+    showAlert("Éxito", "Proveedor eliminado correctamente.");
   };
 
   const renderProveedorItem = ({ item }) => (
@@ -153,12 +165,12 @@ export default function GestionProveedores({ navigation }) {
 
       {/* --- Modales --- */}
       <Modal visible={isAddModalVisible} onRequestClose={() => setIsAddModalVisible(false)} transparent={true} animationType="fade">
-        <ProveedorForm onSave={handleSaveProveedor} onClose={() => setIsAddModalVisible(false)} />
+        <ProveedorForm onSave={handleSaveProveedor} onClose={() => setIsAddModalVisible(false)} showAlert={showAlert} />
       </Modal>
 
       {editingProveedor && (
         <Modal visible={isEditModalVisible} onRequestClose={() => setIsEditModalVisible(false)} transparent={true} animationType="fade">
-          <ProveedorForm isEdit proveedorData={editingProveedor} onSave={handleUpdateProveedor} onClose={() => setIsEditModalVisible(false)} />
+          <ProveedorForm isEdit proveedorData={editingProveedor} onSave={handleUpdateProveedor} onClose={() => setIsEditModalVisible(false)} showAlert={showAlert} />
         </Modal>
       )}
 
@@ -182,6 +194,13 @@ export default function GestionProveedores({ navigation }) {
         </View>
       </Modal>
 
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+      />
+
     </SafeAreaView>
   );
 }
@@ -199,7 +218,7 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, height: 45, fontFamily: 'Roboto-Regular', fontSize: 16, color: DARK_GREY },
   addButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: TERRACOTTA, paddingHorizontal: 15, height: 45, borderRadius: 10, marginLeft: 10 },
   addButtonText: { fontFamily: 'Roboto-Bold', color: '#fff', fontSize: 16, marginLeft: 5 },
-  listContainer: { paddingHorizontal: 20, paddingBottom: 20 },
+  listContainer: { paddingHorizontal: 20, paddingBottom: 20, paddingTop: 10 },
   card: { backgroundColor: OFF_WHITE, borderRadius: 15, marginBottom: 15, flexDirection: 'row', alignItems: 'center', padding: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 },
   cardContent: { flex: 1 },
   cardTitle: { fontFamily: 'Roboto-Bold', fontSize: 18, color: DARK_GREY, marginBottom: 8 },
