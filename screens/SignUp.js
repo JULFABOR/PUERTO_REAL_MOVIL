@@ -168,12 +168,6 @@ export default function SignUp({ navigation }) {
                   onlyLetters
                   onFocusChange={setNombreFocused}
                 />
-                {nombreFocused && (
-                  <View style={styles.requirementsContainer}>
-                    <Text style={styles.requirementTitle}>El nombre debe contener:</Text>
-                    <Text style={[styles.requirement, validarNombreApellido(nombre) ? styles.requirementMet : null]}>○ Solo letras y espacios</Text>
-                  </View>
-                )}
                 <Input
                   icon="user"
                   placeholder="Apellido"
@@ -182,12 +176,6 @@ export default function SignUp({ navigation }) {
                   onlyLetters
                   onFocusChange={setApellidoFocused}
                 />
-                {apellidoFocused && (
-                  <View style={styles.requirementsContainer}>
-                    <Text style={styles.requirementTitle}>El apellido debe contener:</Text>
-                    <Text style={[styles.requirement, validarNombreApellido(apellido) ? styles.requirementMet : null]}>○ Solo letras y espacios</Text>
-                  </View>
-                )}
                 <Input
                   icon="envelope"
                   placeholder="Correo Electrónico"
@@ -197,12 +185,11 @@ export default function SignUp({ navigation }) {
                   autoCapitalize="none"
                   onFocusChange={setEmailFocused}
                 />
-                {emailFocused && (
-                  <View style={styles.requirementsContainer}>
-                    <Text style={styles.requirementTitle}>El correo debe tener:</Text>
-                    <Text style={[styles.requirement, validarEmail(email) ? styles.requirementMet : null]}>○ Formato válido (ejemplo@dominio.com)</Text>
-                  </View>
-                )}
+                  {validarEmail(email) && (
+                    <View style={styles.requirementsContainer}>
+                      <Text style={[styles.requirement, styles.requirementMet]}>Formato válido.</Text>
+                    </View>
+                  )}
                 
                 <View style={styles.passwordContainer}>
                   <Input placeholder="Contraseña" value={password} onChangeText={setPassword} secureTextEntry={!showPasswords} />

@@ -59,7 +59,7 @@ export default function Login({ navigation }) {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      showAlert("Error", "Por favor ingrese ambos campos.");
+      showAlert("Error", "Por favor, complete ambos campos.");
       return;
     }
     if (!validarEmail(email)) {
@@ -87,8 +87,13 @@ export default function Login({ navigation }) {
       setLoading(false);
       setButtonTextVisible(true);
       let errorMessage = "Hubo un problema al iniciar sesión.";
-      if (error.code === 'auth/invalid-email' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
-        errorMessage = "La contraseña o el correo son incorrectos.";
+      if (
+        error.code === 'auth/invalid-email' ||
+        error.code === 'auth/wrong-password' ||
+        error.code === 'auth/invalid-credential' ||
+        error.code === 'auth/user-not-found'
+      ) {
+        errorMessage = "Credenciales inválidas.";
       } else if (error.code === 'auth/network-request-failed') {
         errorMessage = "Error de conexión, por favor intenta más tarde.";
       }
