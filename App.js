@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import Navigation from './navigation/Navigation';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import { ThemeProvider } from './theme/ThemeContext';
 
 // Mantener la pantalla de carga visible mientras se cargan las fuentes
 SplashScreen.preventAutoHideAsync();
@@ -34,5 +35,9 @@ export default function App() {
     return null; // No renderizar nada hasta que las fuentes se hayan cargado
   }
 
-  return <Navigation />;
+  return (
+    <ThemeProvider>
+      <Navigation />
+    </ThemeProvider>
+  );
 }
