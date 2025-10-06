@@ -78,7 +78,7 @@ export default function Login({ navigation }) {
         easing: Easing.out(Easing.quad),
         useNativeDriver: false,
       }).start(() => {
-        navigation.reset({ index: 0, routes: [{ name: 'Home', params: { animateFade: true } }] });
+        navigation.reset({ index: 0, routes: [{ name: 'App' }] });
         circleAnim.setValue(0);
         setButtonTextVisible(true);
         setLoading(false);

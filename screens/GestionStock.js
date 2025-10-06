@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -13,11 +12,11 @@ import {
   Modal,
   TextInput,
   Button,
-  Alert,
 } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { db } from '../src/config/firebaseConfig'; // Importar db
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import CustomAlert from '../components/CustomAlert'; // Importar CustomAlert
 
 // --- Colores y Estilos Reutilizados ---
 const TERRACOTTA = '#d96c3d';
@@ -34,6 +33,12 @@ export default function GestionStock({ navigation }) {
   const [productCategory, setProductCategory] = useState('');
   const [productStock, setProductStock] = useState('');
   const [productPrice, setProductPrice] = useState('');
+  const [isDeleteAlertVisible, setIsDeleteAlertVisible] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "products"), (snapshot) => {
@@ -62,37 +67,58 @@ export default function GestionStock({ navigation }) {
   };
 
   const handleDeleteProduct = (item) => {
-    Alert.alert(
-      "Confirmar Eliminación",
-      `¿Estás seguro de que quieres eliminar "${item.name}"?`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        { 
-          text: "Eliminar", 
-          onPress: async () => {
-            try {
-              await deleteDoc(doc(db, "products", item.id));
-            } catch (error) {
-              Alert.alert("Error", "No se pudo eliminar el producto.");
-            }
-          },
-          style: "destructive"
-        }
-      ]
-    );
+    setProductToDelete(item);
+    setIsDeleteAlertVisible(true);
+  };
+
+  const confirmDelete = async () => {
+    if (productToDelete) {
+      try {
+        await deleteDoc(doc(db, "products", productToDelete.id));
+        setIsDeleteAlertVisible(false);
+        setProductToDelete(null);
+      } catch (error) {
+        setAlertTitle('Error');
+        setAlertMessage('No se pudo eliminar el producto.');
+        setAlertVisible(true);
+      }
+    }
   };
 
   const handleSaveProduct = async () => {
+    // Validación de campos obligatorios
     if (!productName || !productCategory || !productStock || !productPrice) {
-      Alert.alert("Error", "Todos los campos son obligatorios.");
+      setAlertTitle('Error');
+      setAlertMessage('Todos los campos son obligatorios.');
+      setAlertVisible(true);
+      return;
+    }
+
+    // Validación de nombre (sin caracteres especiales)
+    const nameRegex = /^[a-zA-Z0-9\s]+$/;
+    if (!nameRegex.test(productName)) {
+      setAlertTitle('Error');
+      setAlertMessage('El nombre del producto solo puede contener letras, números y espacios.');
+      setAlertVisible(true);
+      return;
+    }
+
+    const stock = parseInt(productStock);
+    const price = parseFloat(productPrice);
+
+    // Validación de stock y precio (no negativos)
+    if (stock < 0 || price < 0) {
+      setAlertTitle('Error');
+      setAlertMessage('El stock y el precio no pueden ser negativos.');
+      setAlertVisible(true);
       return;
     }
 
     const productData = {
         name: productName,
         category: productCategory,
-        stock: parseInt(productStock),
-        price: parseFloat(productPrice),
+        stock: stock,
+        price: price,
     };
 
     try {
@@ -106,7 +132,9 @@ export default function GestionStock({ navigation }) {
         }
         setModalVisible(false);
     } catch (error) {
-        Alert.alert("Error", "No se pudo guardar el producto.");
+        setAlertTitle('Error');
+        setAlertMessage('No se pudo guardar el producto.');
+        setAlertVisible(true);
     }
   };
 
@@ -161,6 +189,24 @@ export default function GestionStock({ navigation }) {
             </View>
           </Modal>
 
+          <CustomAlert
+            visible={isDeleteAlertVisible}
+            title="Confirmar Eliminación"
+            message={`¿Estás seguro de que quieres eliminar "${productToDelete?.name}"?`}
+            buttons={[
+              { text: 'Cancelar', style: 'cancel', onPress: () => setIsDeleteAlertVisible(false) },
+              { text: 'Eliminar', style: 'destructive', onPress: confirmDelete },
+            ]}
+            onClose={() => setIsDeleteAlertVisible(false)}
+          />
+
+          <CustomAlert
+            visible={alertVisible}
+            title={alertTitle}
+            message={alertMessage}
+            onClose={() => setAlertVisible(false)}
+          />
+
         </View>
       </ImageBackground>
     </SafeAreaView>
@@ -175,7 +221,7 @@ const ProductItem = ({ item, onEdit, onDelete }) => (
       <Text style={styles.itemCategory}>{item.category}</Text>
       <View style={styles.itemStockInfo}>
         <Text style={styles.itemStock}>Stock: {item.stock} uds.</Text>
-        <Text style={styles.itemPrice}>Precio: ${item.price.toFixed(2)}</Text>
+        <Text style={styles.itemPrice}>Precio: ${(item.price || 0).toFixed(2)}</Text>
       </View>
     </View>
     <View style={styles.itemActions}>

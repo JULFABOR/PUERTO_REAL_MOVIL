@@ -17,6 +17,25 @@ import PreferencesScreen from '../screens/PreferencesScreen';
 import HelpScreen from '../screens/HelpScreen';
 
 const Stack = createStackNavigator();
+const AppStack = createStackNavigator();
+
+function AppNavigator() {
+  return (
+    <AppStack.Navigator 
+      screenOptions={{
+        headerShown: false,
+        cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
+      }}
+    >
+      <AppStack.Screen name="Main" component={TabNavigator} />
+      <AppStack.Screen name="ControlCompras" component={ControlCompras} />
+      <AppStack.Screen name="GestionProveedores" component={GestionProveedores} />
+      <AppStack.Screen name="GestionStock" component={GestionStock} />
+      <AppStack.Screen name="Preferences" component={PreferencesScreen} />
+      <AppStack.Screen name="Help" component={HelpScreen} />
+    </AppStack.Navigator>
+  );
+}
 
 function Navigation() {
   const [initializing, setInitializing] = useState(true);
@@ -57,14 +76,7 @@ function Navigation() {
         }}
       >
         {user ? (
-          <>
-            <Stack.Screen name="App" component={TabNavigator} />
-            <Stack.Screen name="ControlCompras" component={ControlCompras} />
-            <Stack.Screen name="GestionProveedores" component={GestionProveedores} />
-            <Stack.Screen name="GestionStock" component={GestionStock} />
-            <Stack.Screen name="Preferences" component={PreferencesScreen} />
-            <Stack.Screen name="Help" component={HelpScreen} />
-          </>
+          <Stack.Screen name="App" component={AppNavigator} />
         ) : (
           <>
             <Stack.Screen name="Welcome" component={Welcome} />
