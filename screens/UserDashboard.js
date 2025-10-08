@@ -80,7 +80,7 @@ export default function UserDashboard({ navigation }) {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
-        Alert.alert("Éxito", "Tu contraseña ha sido actualizada.");
+        showAlert("Éxito", "Tu contraseña ha sido actualizada.");
     } catch (error) {
         showAlert("Error", "La contraseña actual es incorrecta o ha ocurrido un error.");
     }
@@ -88,12 +88,12 @@ export default function UserDashboard({ navigation }) {
 
   const handleUpdateProfile = async () => {
     if (!displayName.trim()) {
-        Alert.alert("Error", "El nombre de usuario no puede estar vacío.");
+        showAlert("Error", "El nombre de usuario no puede estar vacío.");
         return;
     }
     try {
         await updateProfile(user, { displayName: displayName.trim() });
-        setProfileModalVisible(false);
+        setProfileModalVisible(false);        
         Alert.alert("Éxito", "Tu nombre de usuario ha sido actualizado.");
     } catch (error) {
         showAlert("Error", "No se pudo actualizar el perfil.");
@@ -103,6 +103,7 @@ export default function UserDashboard({ navigation }) {
   const userEmail = user?.email || 'No disponible';
 
   return (
+
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Perfil de Usuario</Text>
@@ -170,7 +171,7 @@ export default function UserDashboard({ navigation }) {
                 <TextInput placeholder="Nueva Contraseña" value={newPassword} onChangeText={setNewPassword} style={styles.input} secureTextEntry placeholderTextColor={theme.text}/>
                 <TextInput placeholder="Confirmar Nueva Contraseña" value={confirmPassword} onChangeText={setConfirmPassword} style={styles.input} secureTextEntry placeholderTextColor={theme.text}/>
                 <View style={styles.modalButtons}>
-                    <Button title="Guardar Cambios" onPress={handleChangePassword} color={theme.primary} />
+                    <Button title="Guardar" onPress={handleChangePassword} color={theme.primary} />
                     <Button title="Cancelar" onPress={() => setPasswordModalVisible(false)} color="#888" />
                 </View>
             </View>
@@ -195,6 +196,7 @@ export default function UserDashboard({ navigation }) {
         </View>
       </Modal>
     </SafeAreaView>
+
   );
 }
 
@@ -300,7 +302,7 @@ const getStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.primary,
     borderRadius: 8,
     paddingVertical: 15,
-    marginTop: 30,
+    marginTop: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,

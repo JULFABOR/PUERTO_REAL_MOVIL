@@ -22,8 +22,8 @@ const DARK_GREY = '#3A3A3A';
 const OFF_WHITE = '#FAF9F6';
 const LIGHT_GREY = '#E0E0E0';
 const DANGER_RED = '#D9534F';
-const SUCCESS_GREEN = '#5CB85C';
-const BACKGROUND_IMAGE = require('../assets/vine-9039366.jpg');
+const SUCCESS_GREEN = '#5cb85c';
+const BACKGROUND_IMAGE = require('../assets/wine-cellar-573833.jpg');
 
 // --- Datos de Ejemplo ---
 const dummyPurchases = [
@@ -165,6 +165,7 @@ export default function ControlCompras({ navigation }) {
   const handleExportToPdf = () => { showAlert("Info", "Funcionalidad no implementada."); };
 
   const renderPurchaseItem = ({ item }) => (
+
     <View style={styles.card}>
       <View style={styles.cardContent}>
         <Text style={styles.cardTitle}>{item.codigo}</Text>
@@ -179,6 +180,7 @@ export default function ControlCompras({ navigation }) {
       </View>
     </View>
   );
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -269,6 +271,7 @@ export default function ControlCompras({ navigation }) {
       />
 
     </SafeAreaView>
+
   );
 }
 

@@ -22,7 +22,7 @@ import CustomAlert from '../components/CustomAlert'; // Importar CustomAlert
 const TERRACOTTA = '#d96c3d';
 const DARK_GREY = '#3A3A3A';
 const OFF_WHITE = '#FAF9F6';
-const BACKGROUND_IMAGE = require('../assets/still-life-5352858.jpg');
+const BACKGROUND_IMAGE = require('../assets/wine-cellar-573833.jpg');
 
 // --- Componente Principal ---
 export default function GestionStock({ navigation }) {

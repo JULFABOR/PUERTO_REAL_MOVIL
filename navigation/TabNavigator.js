@@ -18,9 +18,9 @@ import UserDashboard from '../screens/UserDashboard';
 const Tab = createBottomTabNavigator();
 
 // --- Constants for styling ---
-const TAB_BAR_HEIGHT = 75;
+const TAB_BAR_HEIGHT = 65;
 const TAB_BAR_MARGIN_H = 25;
-const TAB_BAR_MARGIN_B = 30;
+const TAB_BAR_MARGIN_B = 50;
 const FONT_FAMILY = 'Lato-Bold';
 
 const { width } = Dimensions.get('window');

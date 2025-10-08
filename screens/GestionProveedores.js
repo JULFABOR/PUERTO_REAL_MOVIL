@@ -22,8 +22,8 @@ const DARK_GREY = '#3A3A3A';
 const OFF_WHITE = '#FAF9F6';
 const LIGHT_GREY = '#E0E0E0';
 const DANGER_RED = '#D9534F';
-const SUCCESS_GREEN = '#5CB85C';
-const BACKGROUND_IMAGE = require('../assets/vine-9039366.jpg');
+const SUCCESS_GREEN = '#5cb85c';
+const BACKGROUND_IMAGE = require('../assets/wine-cellar-573833.jpg');
 
 // --- Datos de Ejemplo ---
 const dummyProveedores = [
@@ -143,6 +143,7 @@ export default function GestionProveedores({ navigation }) {
   );
 
   return (
+
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
       <ImageBackground source={BACKGROUND_IMAGE} resizeMode="cover" style={styles.backgroundImage}>
@@ -202,6 +203,7 @@ export default function GestionProveedores({ navigation }) {
       />
 
     </SafeAreaView>
+
   );
 }
 
