@@ -12,7 +12,7 @@ import ForgotPassword from '../screens/ForgotPassword';
 import ControlCompras from '../screens/ControlCompras';
 import GestionProveedores from '../screens/GestionProveedores';
 import GestionStock from '../screens/GestionStock';
-import TabNavigator from './TabNavigator'; // Importamos el nuevo Tab Navigator
+import TabNavigator from './TabNavigator';
 import PreferencesScreen from '../screens/PreferencesScreen';
 import HelpScreen from '../screens/HelpScreen';
 
