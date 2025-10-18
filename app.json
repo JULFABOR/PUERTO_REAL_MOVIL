@@ -1,29 +1,39 @@
 {
   "expo": {
-    "name": "PUERTO_REAL_MOVIL",
-    "slug": "PUERTO_REAL_MOVIL",
+    "name": "PuertoRealMobile",
+    "slug": "PuertoRealMobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.puerrorealmobile",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Esta aplicación necesita acceso a tu galería de fotos para permitirte seleccionar una imagen de perfil."
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
       },
+      "package": "com.puerrorealmobile",
       "edgeToEdgeEnabled": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "65e0a85c-b247-449b-82b3-b3e1c2a26415"
+      }
     }
   }
 }
