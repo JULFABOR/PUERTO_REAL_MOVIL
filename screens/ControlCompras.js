@@ -1,3 +1,9 @@
+/**
+ * @file ControlCompras.js
+ * @description Pantalla para la gestión de compras, incluyendo operaciones CRUD.
+ * @author [Tu Nombre]
+ */
+
 import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
@@ -23,6 +29,16 @@ import { getCrudStyles } from '../theme/crudStyles';
 
 const BACKGROUND_IMAGE = require('../assets/wine-cellar-573833.jpg');
 
+/**
+ * Componente para el formulario de compras, utilizado para añadir y editar compras.
+ * @param {object} props - Propiedades del componente.
+ * @param {boolean} props.visible - Controla la visibilidad del modal.
+ * @param {function} props.onClose - Función a llamar cuando se cierra el modal.
+ * @param {function} props.onSave - Función a llamar para guardar la compra.
+ * @param {object} props.purchase - El objeto compra a editar. Nulo para una nueva compra.
+ * @param {object} props.theme - El objeto de tema para el estilo.
+ * @returns {JSX.Element}
+ */
 const PurchaseForm = ({ visible, onClose, onSave, purchase, theme }) => {
   const { t } = useTranslation();
   const styles = getCrudStyles(theme);
@@ -33,6 +49,9 @@ const PurchaseForm = ({ visible, onClose, onSave, purchase, theme }) => {
 
   const totalImporte = items.reduce((sum, item) => sum + parseFloat(item.price || 0), 0);
 
+  /**
+   * Efecto para poblar el formulario cuando se selecciona una compra para editar.
+   */
   useEffect(() => {
     if (purchase) {
       setProveedor(purchase.proveedor || '');
@@ -43,20 +62,30 @@ const PurchaseForm = ({ visible, onClose, onSave, purchase, theme }) => {
     }
   }, [purchase]);
 
+  /**
+   * Añade un nuevo item a la lista de productos de la compra.
+   */
   const handleAddItem = () => {
     if (itemName && itemPrice) {
       setItems([...items, { name: itemName, price: parseFloat(itemPrice) }]);
       setItemName('');
       setItemPrice('');
     } else {
-      // showAlert or some feedback
+      // Aquí se podría mostrar una alerta o feedback al usuario.
     }
   };
 
+  /**
+   * Elimina un item de la lista de productos.
+   * @param {number} indexToRemove - El índice del item a eliminar.
+   */
   const handleRemoveItem = (indexToRemove) => {
     setItems(items.filter((_, index) => index !== indexToRemove));
   };
 
+  /**
+   * Maneja el guardado de los datos de la compra.
+   */
   const handleSave = () => {
     onSave({ proveedor, items, importe: totalImporte });
   };
@@ -112,11 +141,18 @@ const PurchaseForm = ({ visible, onClose, onSave, purchase, theme }) => {
   );
 };
 
+/**
+ * Componente principal para la gestión de compras.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.navigation - Objeto de navegación.
+ * @returns {JSX.Element}
+ */
 export default function ControlCompras({ navigation }) {
   const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
   const styles = getCrudStyles(theme);
 
+  // Variables de estado
   const [purchases, setPurchases] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -127,10 +163,14 @@ export default function ControlCompras({ navigation }) {
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
 
+  /**
+   * Efecto para obtener las compras y sus items de Firestore en tiempo real.
+   */
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "compras"), async (snapshot) => {
       const purchasesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
+      // Carga los items de la subcolección para cada compra
       const purchasesWithItemsPromises = purchasesData.map(async (purchase) => {
         const itemsColRef = collection(db, "compras", purchase.id, "items");
         const itemsSnapshot = await getDocs(itemsColRef);
@@ -144,30 +184,50 @@ export default function ControlCompras({ navigation }) {
     return () => unsubscribe();
   }, []);
 
+  /**
+   * Muestra una alerta personalizada.
+   * @param {string} title - El título de la alerta.
+   * @param {string} message - El mensaje de la alerta.
+   */
   const showAlert = (title, message) => {
     setAlertTitle(title);
     setAlertMessage(message);
     setAlertVisible(true);
   };
 
+  /**
+   * Maneja la apertura del modal para añadir una nueva compra.
+   */
   const handleAdd = () => {
     setSelectedPurchase(null);
     setModalVisible(true);
   };
 
+  /**
+   * Maneja la apertura del modal para editar una compra existente.
+   * @param {object} purchase - La compra a editar.
+   */
   const handleEdit = (purchase) => {
     setSelectedPurchase(purchase);
     setModalVisible(true);
   };
 
+  /**
+   * Maneja la apertura del modal de confirmación para eliminar una compra.
+   * @param {object} purchase - La compra a eliminar.
+   */
   const handleDelete = (purchase) => {
     setDeletingPurchase(purchase);
     setIsDeleteModalVisible(true);
   };
 
+  /**
+   * Confirma y ejecuta la eliminación de una compra.
+   */
   const confirmDelete = async () => {
     if (deletingPurchase) {
       try {
+        // La eliminación de subcolecciones debe manejarse por separado si es necesario.
         await deleteDoc(doc(db, "compras", deletingPurchase.id));
         setIsDeleteModalVisible(false);
         setDeletingPurchase(null);
@@ -178,6 +238,10 @@ export default function ControlCompras({ navigation }) {
     }
   };
 
+  /**
+   * Maneja el guardado de una compra nueva o actualizada en Firestore.
+   * @param {object} data - Los datos de la compra a guardar.
+   */
   const handleSave = async (data) => {
     if (!data.proveedor || data.items.length === 0) {
       showAlert(t("purchases.error"), t("purchases.supplierAndProductsRequired"));
@@ -186,39 +250,34 @@ export default function ControlCompras({ navigation }) {
 
     try {
       if (selectedPurchase) {
-        // TODO: La lógica de actualización es más compleja con subcolecciones y requiere un tratamiento especial.
-        // Por ahora, se actualiza solo el documento principal para evitar errores.
+        // La lógica de actualización con subcolecciones es compleja.
+        // Se actualiza el documento principal y se podría reimplementar la subcolección.
         const purchaseRef = doc(db, "compras", selectedPurchase.id);
         await updateDoc(purchaseRef, {
           proveedor: data.proveedor,
           importe: data.importe,
         });
+        // Aquí faltaría la lógica para actualizar la subcolección de items.
         showAlert(t("purchases.success"), "Compra actualizada (solo datos principales).");
 
       } else {
-        // Proceso para crear una nueva compra con subcolección de items usando un batch
+        // Proceso para crear una nueva compra con subcolección de items usando un batch.
         const batch = writeBatch(db);
-
-        // 1. Crear una referencia para el nuevo documento de compra para obtener su ID
         const newPurchaseRef = doc(collection(db, "compras"));
         
-        // 2. Definir los datos del documento principal
         const mainPurchaseData = {
           proveedor: data.proveedor,
           importe: data.importe,
           fecha: serverTimestamp(),
         };
 
-        // 3. Añadir la operación de creación del documento principal al batch
         batch.set(newPurchaseRef, mainPurchaseData);
 
-        // 4. Añadir cada item como un nuevo documento en la subcolección "items"
         for (const item of data.items) {
           const newItemRef = doc(collection(newPurchaseRef, "items"));
           batch.set(newItemRef, item);
         }
 
-        // 5. Ejecutar todas las operaciones del batch de forma atómica
         await batch.commit();
         showAlert(t("purchases.success"), t("purchases.purchaseAdded"));
       }
@@ -229,6 +288,9 @@ export default function ControlCompras({ navigation }) {
     }
   };
 
+  /**
+   * Filtra las compras en función de la consulta de búsqueda.
+   */
   const filteredPurchases = purchases.filter(p => 
     p.proveedor.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -238,17 +300,20 @@ export default function ControlCompras({ navigation }) {
       <StatusBar barStyle="light-content" />
       <ImageBackground source={BACKGROUND_IMAGE} resizeMode="cover" style={styles.backgroundImage}>
         <View style={styles.overlay}>
+          {/* Encabezado */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}><Ionicons name="arrow-back" size={28} color={theme.card} /></TouchableOpacity>
             <Text style={styles.headerTitle}>{t('purchases.title')}</Text>
             <TouchableOpacity onPress={handleAdd}><Ionicons name="add" size={32} color={theme.card} /></TouchableOpacity>
           </View>
+          {/* Búsqueda y controles */}
           <View style={styles.controlsContainer}>
             <View style={styles.searchContainer}>
               <FontAwesome name="search" size={18} color={theme.text} style={styles.searchIcon} />
               <TextInput style={styles.searchInput} placeholder={t('purchases.search')} placeholderTextColor={theme.text} value={searchQuery} onChangeText={setSearchQuery} />
             </View>
           </View>
+          {/* Lista de compras */}
           <FlatList 
             data={filteredPurchases} 
             renderItem={({item}) => <PurchaseItem item={item} onEdit={handleEdit} onDelete={handleDelete} theme={theme} />} 
@@ -258,6 +323,7 @@ export default function ControlCompras({ navigation }) {
         </View>
       </ImageBackground>
 
+      {/* Modal para añadir/editar compra */}
       <PurchaseForm 
         visible={modalVisible} 
         onClose={() => setModalVisible(false)} 
@@ -266,6 +332,7 @@ export default function ControlCompras({ navigation }) {
         theme={theme} 
       />
 
+      {/* Modal de confirmación de eliminación */}
       <Modal visible={isDeleteModalVisible} onRequestClose={() => setIsDeleteModalVisible(false)} transparent={true} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
@@ -286,6 +353,7 @@ export default function ControlCompras({ navigation }) {
         </View>
       </Modal>
 
+      {/* Alerta personalizada */}
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
@@ -296,6 +364,15 @@ export default function ControlCompras({ navigation }) {
   );
 }
 
+/**
+ * Componente para renderizar un único elemento de compra en la lista.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.item - Los datos del elemento compra.
+ * @param {function} props.onEdit - Función a llamar para editar la compra.
+ * @param {function} props.onDelete - Función a llamar para eliminar la compra.
+ * @param {object} props.theme - El objeto de tema para el estilo.
+ * @returns {JSX.Element}
+ */
 const PurchaseItem = ({ item, onEdit, onDelete, theme }) => {
   const styles = getCrudStyles(theme);
   const date = item.fecha?.toDate ? item.fecha.toDate().toLocaleDateString() : 'N/A';

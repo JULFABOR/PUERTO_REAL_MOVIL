@@ -1,3 +1,9 @@
+/**
+ * @file ForgotPassword.js
+ * @description Pantalla para que los usuarios puedan restablecer su contraseña.
+ * @author [Tu Nombre]
+ */
+
 import React, { useState, useCallback } from 'react';
 import {
   View,
@@ -34,7 +40,12 @@ const LOGO_STYLE = {
 };
 const BACKGROUND_IMAGE = require('../assets/vine-9039366.jpg');
 
-// --- Componente Principal ---
+/**
+ * Componente principal de la pantalla de recuperación de contraseña.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.navigation - Objeto de navegación de React Navigation.
+ * @returns {JSX.Element}
+ */
 export default function ForgotPassword({ navigation }) {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
@@ -43,25 +54,37 @@ export default function ForgotPassword({ navigation }) {
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
 
+  /**
+   * Hook de efecto que se ejecuta cuando la pantalla obtiene el foco.
+   * Restablece los estados del formulario para una nueva interacción.
+   */
   useFocusEffect(
     useCallback(() => {
-      // Restablecer el estado cuando la pantalla se enfoca
       setAlertVisible(false);
       setEmail('');
       setLoading(false);
 
       return () => {
-        // Limpieza opcional si es necesario al salir de la pantalla
+        // Limpieza opcional al salir de la pantalla
       };
     }, [])
   );
 
+  /**
+   * Muestra una alerta personalizada.
+   * @param {string} title - Título de la alerta.
+   * @param {string} message - Mensaje de la alerta.
+   */
   const showAlert = (title, message) => {
     setAlertTitle(title);
     setAlertMessage(message);
     setAlertVisible(true);
   };
 
+  /**
+   * Maneja el proceso de restablecimiento de contraseña.
+   * Valida el email y utiliza Firebase Auth para enviar el correo de recuperación.
+   */
   const handlePasswordReset = async () => {
     if (!email) {
       showAlert(t('error'), t('pleaseEnterEmail'));
@@ -75,7 +98,7 @@ export default function ForgotPassword({ navigation }) {
     try {
       await sendPasswordResetEmail(auth, email);
       showAlert(t('emailSent'), t('passwordResetEmailSent'));
-      // Pequeña pausa antes de navegar para que el usuario vea la alerta
+      // Pausa para que el usuario vea la alerta antes de navegar a Login
       setTimeout(() => {
         navigation.navigate('Login');
       }, 3000);
@@ -170,11 +193,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   welcomeText: {
-    fontSize: 30, // Ajuste de tamaño para la nueva fuente
+    fontSize: 30,
     color: DARK_GREY,
     marginBottom: 10,
     textAlign: 'center',
-    fontFamily: 'Roboto-Bold', // Fuente Sans-Serif fuerte
+    fontFamily: 'Roboto-Bold',
   },
   infoText: {
     fontSize: 15,
@@ -196,7 +219,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto-Bold',
   },
   backContainer: {
-    marginTop: 20, // Espacio para separar del recuadro
+    marginTop: 20,
     paddingVertical: 15,
   },
   backText: {

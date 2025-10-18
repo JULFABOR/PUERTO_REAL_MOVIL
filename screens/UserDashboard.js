@@ -1,3 +1,9 @@
+/**
+ * @file UserDashboard.js
+ * @description Panel de control del usuario para gestionar su perfil, contraseña y preferencias.
+ * @author [Tu Nombre]
+ */
+
 import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
@@ -23,28 +29,42 @@ import CustomAlert from '../components/CustomAlert';
 import { ThemeContext } from '../theme/ThemeContext';
 import { cloudinaryConfig } from '../src/config/cloudinaryConfig';
 
+/**
+ * Componente principal del panel de usuario.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.navigation - Objeto de navegación de React Navigation.
+ * @returns {JSX.Element}
+ */
 export default function UserDashboard({ navigation }) {
   const { theme } = useContext(ThemeContext);
   const styles = getStyles(theme);
   const { t } = useTranslation();
 
+  // Estados del componente
   const [user, setUser] = useState(auth.currentUser);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   
+  // Estados para la visibilidad de los modales
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
 
+  // Estados para el cambio de contraseña
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  // Estados para la edición del perfil
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   
+  // Estado para la subida de imagen
   const [uploading, setUploading] = useState(false);
 
+  /**
+   * Efecto para observar cambios en el estado de autenticación del usuario.
+   */
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
@@ -57,12 +77,20 @@ export default function UserDashboard({ navigation }) {
     return unsubscribe;
   }, []);
 
+  /**
+   * Muestra una alerta personalizada.
+   * @param {string} title - Título de la alerta.
+   * @param {string} message - Mensaje de la alerta.
+   */
   const showAlert = (title, message) => {
     setAlertTitle(title);
     setAlertMessage(message);
     setAlertVisible(true);
   };
 
+  /**
+   * Cierra la sesión del usuario y navega a la pantalla de Login.
+   */
   const handleLogOut = async () => {
     try {
       await signOut(auth);
@@ -72,6 +100,10 @@ export default function UserDashboard({ navigation }) {
     }
   };
 
+  /**
+   * Maneja el cambio de contraseña del usuario.
+   * Requiere reautenticación.
+   */
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
       showAlert(t("error"), t("passwordMismatch"));
@@ -87,6 +119,7 @@ export default function UserDashboard({ navigation }) {
         await reauthenticateWithCredential(user, credential);
         await updatePassword(user, newPassword);
         setPasswordModalVisible(false);
+        // Limpiar campos
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
@@ -96,6 +129,9 @@ export default function UserDashboard({ navigation }) {
     }
   };
 
+  /**
+   * Actualiza el nombre y apellido del usuario.
+   */
   const handleUpdateProfile = async () => {
     if (!nombre.trim() || !apellido.trim()) {
         showAlert(t("error"), t("nameAndSurnameRequired"));
@@ -111,6 +147,9 @@ export default function UserDashboard({ navigation }) {
     }
   };
 
+  /**
+   * Abre el selector de imágenes para cambiar la foto de perfil.
+   */
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -130,6 +169,10 @@ export default function UserDashboard({ navigation }) {
     }
   };
 
+  /**
+   * Sube la imagen seleccionada a Cloudinary y actualiza el perfil del usuario.
+   * @param {string} uri - La URI local de la imagen seleccionada.
+   */
   const uploadImage = async (uri) => {
     setUploading(true);
     const uriParts = uri.split('.');
@@ -176,6 +219,7 @@ export default function UserDashboard({ navigation }) {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {/* Cabecera con información del usuario */}
         <View style={styles.header}>
           <TouchableOpacity onPress={pickImage} style={styles.profilePicContainer}>
             {uploading ? (
@@ -193,6 +237,7 @@ export default function UserDashboard({ navigation }) {
           <Text style={styles.profileEmail}>{userEmail}</Text>
         </View>
 
+        {/* Panel de opciones */}
         <View style={styles.optionsPanel}>
           <OptionButton
             icon="person-outline"
@@ -220,6 +265,7 @@ export default function UserDashboard({ navigation }) {
           />
         </View>
 
+        {/* Botón de cerrar sesión */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogOut}>
           <Ionicons name="log-out-outline" size={24} color={theme.primary} />
           <Text style={styles.logoutButtonText}>{t('logout')}</Text>
@@ -233,7 +279,7 @@ export default function UserDashboard({ navigation }) {
         onClose={() => setAlertVisible(false)}
       />
 
-      {/* Modals remain the same for now, can be styled later */}
+      {/* Modal para editar perfil */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -253,6 +299,7 @@ export default function UserDashboard({ navigation }) {
         </View>
       </Modal>
 
+      {/* Modal para cambiar contraseña */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -276,6 +323,15 @@ export default function UserDashboard({ navigation }) {
   );
 }
 
+/**
+ * Componente para un botón de opción en el panel.
+ * @param {object} props - Propiedades del componente.
+ * @param {string} props.icon - Nombre del icono de Ionicons.
+ * @param {string} props.text - Texto del botón.
+ * @param {function} props.onPress - Función a ejecutar al presionar.
+ * @param {object} props.theme - Objeto de tema para estilos.
+ * @returns {JSX.Element}
+ */
 const OptionButton = ({ icon, text, onPress, theme }) => {
     const styles = getStyles(theme);
     return (
@@ -287,6 +343,11 @@ const OptionButton = ({ icon, text, onPress, theme }) => {
     );
 };
 
+/**
+ * Genera los estilos para el componente basados en el tema.
+ * @param {object} theme - El objeto de tema.
+ * @returns {object} - Objeto de estilos de StyleSheet.
+ */
 const getStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -385,7 +446,6 @@ const getStyles = (theme) => StyleSheet.create({
     fontSize: 18,
     marginLeft: 10,
   },
-  // Modal styles can be improved here
   modalContainer: {
     flex: 1,
     justifyContent: 'center',

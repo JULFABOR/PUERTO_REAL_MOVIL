@@ -1,3 +1,9 @@
+/**
+ * @file GestionStock.js
+ * @description Pantalla para la gestión de productos en stock, permitiendo operaciones CRUD.
+ * @author [Tu Nombre]
+ */
+
 import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
@@ -21,6 +27,16 @@ import { getCrudStyles } from '../theme/crudStyles';
 
 const BACKGROUND_IMAGE = require('../assets/wine-cellar-573833.jpg');
 
+/**
+ * Componente de formulario para añadir o editar un producto.
+ * @param {object} props - Propiedades del componente.
+ * @param {boolean} props.visible - Controla la visibilidad del modal.
+ * @param {function} props.onClose - Función para cerrar el modal.
+ * @param {function} props.onSave - Función para guardar el producto.
+ * @param {object} props.product - El producto a editar (nulo si es nuevo).
+ * @param {object} props.theme - Objeto de tema para estilos.
+ * @returns {JSX.Element}
+ */
 const ProductForm = ({ visible, onClose, onSave, product, theme }) => {
   const { t } = useTranslation();
   const styles = getCrudStyles(theme);
@@ -29,6 +45,9 @@ const ProductForm = ({ visible, onClose, onSave, product, theme }) => {
   const [stock, setStock] = useState('');
   const [price, setPrice] = useState('');
 
+  /**
+   * Efecto para rellenar el formulario con los datos del producto a editar.
+   */
   useEffect(() => {
     if (product) {
       setName(product.name || '');
@@ -43,6 +62,9 @@ const ProductForm = ({ visible, onClose, onSave, product, theme }) => {
     }
   }, [product]);
 
+  /**
+   * Maneja el guardado de los datos del producto.
+   */
   const handleSave = () => {
     onSave({ name, category, stock, price });
   };
@@ -83,11 +105,18 @@ const ProductForm = ({ visible, onClose, onSave, product, theme }) => {
   );
 };
 
+/**
+ * Componente principal para la gestión del stock de productos.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.navigation - Objeto de navegación.
+ * @returns {JSX.Element}
+ */
 export default function GestionStock({ navigation }) {
   const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
   const styles = getCrudStyles(theme);
 
+  // Variables de estado
   const [products, setProducts] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -97,6 +126,9 @@ export default function GestionStock({ navigation }) {
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
 
+  /**
+   * Efecto para obtener los productos de Firestore en tiempo real.
+   */
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "products"), (snapshot) => {
       const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -105,21 +137,35 @@ export default function GestionStock({ navigation }) {
     return () => unsubscribe();
   }, []);
 
+  /**
+   * Abre el modal para añadir un nuevo producto.
+   */
   const handleAddProduct = () => {
     setSelectedProduct(null);
     setModalVisible(true);
   };
 
+  /**
+   * Abre el modal para editar un producto existente.
+   * @param {object} item - El producto a editar.
+   */
   const handleEditProduct = (item) => {
     setSelectedProduct(item);
     setModalVisible(true);
   };
 
+  /**
+   * Muestra la alerta de confirmación para eliminar un producto.
+   * @param {object} item - El producto a eliminar.
+   */
   const handleDeleteProduct = (item) => {
     setProductToDelete(item);
     setIsDeleteAlertVisible(true);
   };
 
+  /**
+   * Confirma y ejecuta la eliminación de un producto.
+   */
   const confirmDelete = async () => {
     if (productToDelete) {
       try {
@@ -134,6 +180,10 @@ export default function GestionStock({ navigation }) {
     }
   };
 
+  /**
+   * Guarda un producto nuevo o actualizado en Firestore.
+   * @param {object} productData - Datos del producto a guardar.
+   */
   const handleSaveProduct = async (productData) => {
     const { name, category, stock, price } = productData;
     if (!name || !category || !stock || !price) {
@@ -188,6 +238,7 @@ export default function GestionStock({ navigation }) {
       <StatusBar barStyle="light-content" />
       <ImageBackground source={BACKGROUND_IMAGE} resizeMode="cover" style={styles.backgroundImage}>
         <View style={styles.overlay}>
+          {/* Encabezado */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
               <Ionicons name="arrow-back" size={28} color={theme.card} />
@@ -198,6 +249,7 @@ export default function GestionStock({ navigation }) {
             </TouchableOpacity>
           </View>
 
+          {/* Lista de productos */}
           <FlatList
             data={products}
             keyExtractor={(item) => item.id}
@@ -212,6 +264,7 @@ export default function GestionStock({ navigation }) {
             contentContainerStyle={styles.listContainer}
           />
 
+          {/* Formulario de producto (Modal) */}
           <ProductForm 
             visible={modalVisible} 
             onClose={() => setModalVisible(false)} 
@@ -220,6 +273,7 @@ export default function GestionStock({ navigation }) {
             theme={theme} 
           />
 
+          {/* Alerta de confirmación de eliminación */}
           <CustomAlert
             visible={isDeleteAlertVisible}
             title={t('stock.delete_modal_title')}
@@ -231,6 +285,7 @@ export default function GestionStock({ navigation }) {
             onClose={() => setIsDeleteAlertVisible(false)}
           />
 
+          {/* Alerta para otros mensajes */}
           <CustomAlert
             visible={alertVisible}
             title={alertTitle}
@@ -244,6 +299,15 @@ export default function GestionStock({ navigation }) {
   );
 }
 
+/**
+ * Componente para renderizar un único producto en la lista.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.item - Datos del producto.
+ * @param {function} props.onEdit - Función a llamar para editar el producto.
+ * @param {function} props.onDelete - Función a llamar para eliminar el producto.
+ * @param {object} props.theme - Objeto de tema para estilos.
+ * @returns {JSX.Element}
+ */
 const ProductItem = ({ item, onEdit, onDelete, theme }) => {
   const { t } = useTranslation();
   const styles = getCrudStyles(theme);

@@ -1,3 +1,9 @@
+/**
+ * @file SignUp.js
+ * @description Pantalla de registro para nuevos usuarios.
+ * @author [Tu Nombre]
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -33,16 +39,28 @@ const LOGO_STYLE = {
 };
 const BACKGROUND_IMAGE = require('../assets/vine-9039366.jpg');
 
-// --- Componente de Requisito de Contraseña ---
+/**
+ * Componente para mostrar un requisito de contraseña y si se ha cumplido.
+ * @param {object} props - Propiedades del componente.
+ * @param {boolean} props.met - Indica si el requisito se ha cumplido.
+ * @param {string} props.text - El texto del requisito.
+ * @returns {JSX.Element}
+ */
 const PasswordRequirement = ({ met, text }) => (
   <Text style={[styles.passwordRequirement, met && styles.passwordRequirementMet]}>
     {met ? '○' : '-'} {text}
   </Text>
 );
 
-// --- Componente Principal ---
+/**
+ * Componente principal de la pantalla de Registro.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.navigation - Objeto de navegación de React Navigation.
+ * @returns {JSX.Element}
+ */
 export default function SignUp({ navigation }) {
   const { t } = useTranslation();
+  // Estados para los campos del formulario
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [email, setEmail] = useState('');
@@ -50,15 +68,13 @@ export default function SignUp({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPasswords, setShowPasswords] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // Estados para las alertas
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
 
-  // Para mostrar leyendas solo cuando el input está enfocado
-  const [nombreFocused, setNombreFocused] = useState(false);
-  const [apellidoFocused, setApellidoFocused] = useState(false);
-  const [emailFocused, setEmailFocused] = useState(false);
-
+  // Estados para la validación de la contraseña
   const [isLengthValid, setLengthValid] = useState(false);
   const [hasUppercase, setHasUppercase] = useState(false);
   const [hasLowercase, setHasLowercase] = useState(false);
@@ -66,12 +82,9 @@ export default function SignUp({ navigation }) {
   const [hasSpecialChar, setHasSpecialChar] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(true);
 
-  const strengthBarWidth = Math.min(100, (password.length / 8) * 100) + '%';
-
-  const toggleShowPasswords = () => {
-    setShowPasswords(!showPasswords);
-  };
-
+  /**
+   * Efecto para validar la contraseña cada vez que cambia.
+   */
   useEffect(() => {
     setLengthValid(password.length >= 8);
     setHasUppercase(/[A-Z]/.test(password));
@@ -80,19 +93,32 @@ export default function SignUp({ navigation }) {
     setHasSpecialChar(/[^a-zA-Z0-9]/.test(password));
   }, [password]);
 
+  /**
+   * Efecto para verificar si las contraseñas coinciden.
+   */
   useEffect(() => {
     setPasswordsMatch(password === confirmPassword || confirmPassword.length === 0);
   }, [password, confirmPassword]);
 
   const allRequirementsMet = isLengthValid && hasUppercase && hasLowercase && hasNumber && hasSpecialChar;
 
+  /**
+   * Muestra una alerta personalizada.
+   * @param {string} title - Título de la alerta.
+   * @param {string} message - Mensaje de la alerta.
+   */
   const showAlert = (title, message) => {
     setAlertTitle(title);
     setAlertMessage(message);
     setAlertVisible(true);
   };
 
+  /**
+   * Maneja el proceso de registro de un nuevo usuario.
+   * Valida los campos y utiliza Firebase Auth para crear la cuenta.
+   */
   const handleSignUp = async () => {
+    // Validaciones de los campos
     if (!nombre || !apellido || !email || !password || !confirmPassword) {
       showAlert(t("signupError"), t("allFieldsRequired"));
       return;
@@ -110,14 +136,10 @@ export default function SignUp({ navigation }) {
       return;
     }
     if (!passwordsMatch) {
-      setPassword('');
-      setConfirmPassword('');
       showAlert(t("signupError"), t("passwordsDoNotMatch"));
       return;
     }
     if (!allRequirementsMet) {
-      setPassword('');
-      setConfirmPassword('');
       showAlert(t("signupError"), t("passwordRequirements"));
       return;
     }
@@ -126,6 +148,7 @@ export default function SignUp({ navigation }) {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      // Actualiza el perfil del usuario con su nombre y apellido
       await updateProfile(user, {
         displayName: `${nombre.trim()} ${apellido.trim()}`
       });
@@ -157,6 +180,7 @@ export default function SignUp({ navigation }) {
               <Image source={require('../assets/logo.png')} style={styles.logo} />
 
               <BlurView intensity={100} tint="light" style={styles.contentBox}>
+                {/* Selector para cambiar entre Login y Registro */}
                 <View style={styles.tabSwitch}>
                   <View style={[styles.tabSlider, { right: 5 }]} />
                   <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.tabItem}>
@@ -167,48 +191,20 @@ export default function SignUp({ navigation }) {
 
                 <Text style={styles.welcomeText}>{t('createAccount')}</Text>
 
-                <Input
-                  icon="user"
-                  placeholder={t('name')}
-                  value={nombre}
-                  onChangeText={setNombre}
-                  onlyLetters
-                  onFocusChange={setNombreFocused}
-                />
-                <Input
-                  icon="user"
-                  placeholder={t('surname')}
-                  value={apellido}
-                  onChangeText={setApellido}
-                  onlyLetters
-                  onFocusChange={setApellidoFocused}
-                />
-                <Input
-                  icon="envelope"
-                  placeholder={t('email')}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  onFocusChange={setEmailFocused}
-                />
-                  {validarEmail(email) && (
-                    <View style={styles.requirementsContainer}>
-                      <Text style={[styles.requirement, styles.requirementMet]}>{t('validFormat')}</Text>
-                    </View>
-                  )}
+                {/* Campos del formulario */}
+                <Input icon="user" placeholder={t('name')} value={nombre} onChangeText={setNombre} />
+                <Input icon="user" placeholder={t('surname')} value={apellido} onChangeText={setApellido} />
+                <Input icon="envelope" placeholder={t('email')} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
                 
+                {/* Contenedor de contraseña con opción de mostrar/ocultar */}
                 <View style={styles.passwordContainer}>
                   <Input placeholder={t('password')} value={password} onChangeText={setPassword} secureTextEntry={!showPasswords} />
-                  <TouchableOpacity onPress={toggleShowPasswords} style={styles.showPasswordButton}>
+                  <TouchableOpacity onPress={() => setShowPasswords(!showPasswords)} style={styles.showPasswordButton}>
                     <FontAwesome name={showPasswords ? 'eye-slash' : 'eye'} size={20} color={DARK_GREY} />
                   </TouchableOpacity>
                 </View>
 
-                <View style={styles.strengthBarContainer}>
-                  <View style={[styles.strengthBar, { width: strengthBarWidth }]} />
-                </View>
-                
+                {/* Requisitos de la contraseña */}
                 <View style={styles.passwordRequirementsContainer}>
                   <Text style={styles.passwordRequirementsTitle}>{t('passwordMustContain')}</Text>
                   <PasswordRequirement met={isLengthValid} text={t('atLeast8Chars')} />
@@ -220,9 +216,6 @@ export default function SignUp({ navigation }) {
 
                 <View style={styles.passwordContainer}>
                   <Input placeholder={t('confirmPassword')} value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry={!showPasswords} />
-                  <TouchableOpacity onPress={toggleShowPasswords} style={styles.showPasswordButton}>
-                    <FontAwesome name={showPasswords ? 'eye-slash' : 'eye'} size={20} color={DARK_GREY} />
-                  </TouchableOpacity>
                 </View>
                 {!passwordsMatch && <Text style={styles.passwordMismatchError}>{t('passwordsDoNotMatch')}</Text>}
 
@@ -306,6 +299,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 5,
     opacity: 0.7,
+    marginBottom: 15,
   },
   passwordRequirementsTitle: {
     fontSize: 14,
@@ -319,28 +313,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto-Regular',
   },
   passwordRequirementMet: {
-    color: '#2E7D32',
-    fontFamily: 'Roboto-Bold',
-  },
-  requirementsContainer: {
-    width: '100%',
-    paddingHorizontal: 5,
-    opacity: 0.7,
-    marginTop: -15,
-    marginBottom: 10,
-  },
-  requirementTitle: {
-    fontSize: 14,
-    color: DARK_GREY,
-    marginBottom: 3,
-    fontFamily: 'Roboto-Bold',
-  },
-  requirement: {
-    fontSize: 13,
-    color: DARK_GREY,
-    fontFamily: 'Roboto-Regular',
-  },
-  requirementMet: {
     color: '#2E7D32',
     fontFamily: 'Roboto-Bold',
   },

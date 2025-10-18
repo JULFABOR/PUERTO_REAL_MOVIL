@@ -1,3 +1,9 @@
+/**
+ * @file Login.js
+ * @description Pantalla de inicio de sesión de usuario.
+ * @author [Tu Nombre]
+ */
+
 import React, { useState, useRef } from 'react';
 import {
   View,
@@ -36,9 +42,15 @@ const LOGO_STYLE = {
 };
 const BACKGROUND_IMAGE = require('../assets/vine-9039366.jpg');
 
-// --- Componente Principal ---
+/**
+ * Componente principal de la pantalla de Login.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.navigation - Objeto de navegación de React Navigation.
+ * @returns {JSX.Element}
+ */
 export default function Login({ navigation }) {
   const { t } = useTranslation();
+  // Estados del componente
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -48,17 +60,27 @@ export default function Login({ navigation }) {
   const [alertMessage, setAlertMessage] = useState('');
   const [buttonTextVisible, setButtonTextVisible] = useState(true);
 
-  // Animación circular
+  // Referencia para la animación del círculo de transición
   const circleAnim = useRef(new Animated.Value(0)).current;
   const { width, height } = Dimensions.get('window');
   const maxDiameter = Math.sqrt(width * width + height * height) * 2;
 
+  /**
+   * Muestra una alerta personalizada.
+   * @param {string} title - Título de la alerta.
+   * @param {string} message - Mensaje de la alerta.
+   */
   const showAlert = (title, message) => {
     setAlertTitle(title);
     setAlertMessage(message);
     setAlertVisible(true);
   };
 
+  /**
+   * Maneja el proceso de inicio de sesión.
+   * Valida las credenciales y utiliza Firebase Auth para autenticar al usuario.
+   * Inicia una animación de transición si el login es exitoso.
+   */
   const handleLogin = async () => {
     if (!email || !password) {
       showAlert(t("error"), t("completeBothFields"));
@@ -74,12 +96,14 @@ export default function Login({ navigation }) {
     try {
       await signInWithEmailAndPassword(auth, email, password);
 
+      // Inicia la animación de círculo
       Animated.timing(circleAnim, {
         toValue: maxDiameter,
         duration: 700,
         easing: Easing.out(Easing.quad),
         useNativeDriver: false,
       }).start(() => {
+        // Navega a la pantalla principal y resetea el estado de la animación
         navigation.reset({ index: 0, routes: [{ name: 'App' }] });
         circleAnim.setValue(0);
         setButtonTextVisible(true);
@@ -89,6 +113,7 @@ export default function Login({ navigation }) {
       setLoading(false);
       setButtonTextVisible(true);
       let errorMessage = t("loginProblem");
+      // Manejo de errores específicos de Firebase
       if (
         error.code === 'auth/invalid-email' ||
         error.code === 'auth/wrong-password' ||
@@ -108,7 +133,7 @@ export default function Login({ navigation }) {
       <StatusBar barStyle="light-content" />
       <ImageBackground source={BACKGROUND_IMAGE} resizeMode="cover" style={styles.backgroundImage}>
         <View style={styles.overlay}>
-          {/* --- Círculo animado sobre toda la pantalla --- */}
+          {/* Círculo animado para la transición */}
           <Animated.View
             pointerEvents="none"
             style={{
@@ -130,7 +155,6 @@ export default function Login({ navigation }) {
               zIndex: 100,
             }}
           />
-          {/* --- Fin círculo animado --- */}
 
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -140,6 +164,7 @@ export default function Login({ navigation }) {
               <Image source={require('../assets/logo.png')} style={styles.logo} />
 
               <BlurView intensity={100} tint="light" style={styles.contentBox}>
+                {/* Selector para cambiar entre Login y Registro */}
                 <View style={styles.tabSwitch}>
                   <View style={styles.tabSlider} />
                   <Text style={styles.tabTextActive}>{t('ingresar')}</Text>
@@ -152,6 +177,7 @@ export default function Login({ navigation }) {
                   {t('welcomeTo')} <Text style={{ color: TERRACOTTA }}>Puerto Real!</Text>
                 </Text>
 
+                {/* Campos de entrada para email y contraseña */}
                 <Input
                   icon="envelope"
                   placeholder={t('email')}
@@ -176,7 +202,7 @@ export default function Login({ navigation }) {
                   <Text style={styles.forgotPasswordText}>{t('forgotPassword')}</Text>
                 </TouchableOpacity>
 
-                {/* Botón sin círculo animado aquí */}
+                {/* Botón de Login */}
                 <View style={{ position: 'relative', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                   <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading || !buttonTextVisible}>
                     {loading ? <ActivityIndicator color="#fff" /> : buttonTextVisible && <Text style={styles.loginButtonText}>{t('ingresar')}</Text>}

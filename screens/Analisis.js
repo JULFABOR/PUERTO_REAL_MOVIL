@@ -1,3 +1,8 @@
+/**
+ * @file Analisis.js
+ * @description Pantalla de análisis que muestra estadísticas y gráficos sobre el inventario y las compras.
+ */
+
 import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
@@ -17,9 +22,15 @@ import { FontAwesome } from '@expo/vector-icons';
 import { ThemeContext } from '../theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 
+// Umbral para considerar un producto con bajo stock
 const LOW_STOCK_THRESHOLD = 50;
 
-// Helper function to process weekly purchase data
+/**
+ * Procesa los datos de compras semanales para el gráfico de líneas.
+ * @param {Array} purchases - Array de objetos de compras.
+ * @param {function} t - Función de traducción.
+ * @returns {object} - Datos procesados para el gráfico.
+ */
 const processWeeklyData = (purchases, t) => {
   const labels = [];
   const data = Array(7).fill(0);
@@ -32,7 +43,6 @@ const processWeeklyData = (purchases, t) => {
   }
 
   purchases.forEach(purchase => {
-    // Assuming purchase.fecha is a Firebase Timestamp
     if (purchase.fecha && typeof purchase.fecha.toDate === 'function') {
       const purchaseDate = purchase.fecha.toDate();
       const diffTime = today - purchaseDate;
@@ -48,20 +58,30 @@ const processWeeklyData = (purchases, t) => {
   return { labels, datasets: [{ data }] };
 };
 
+/**
+ * Componente principal de la pantalla de análisis.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.navigation - Objeto de navegación.
+ * @returns {JSX.Element}
+ */
 export default function Analisis({ navigation }) {
   const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
   const styles = getStyles(theme);
   
+  // Variables de estado
   const [products, setProducts] = useState([]);
   const [purchases, setPurchases] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  /**
+   * Efecto para obtener datos de productos y compras de Firestore en tiempo real.
+   */
   useEffect(() => {
     const unsubProducts = onSnapshot(collection(db, "products"), (snapshot) => {
       const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setProducts(productsData);
-      if (loading) setLoading(false); // Set loading to false after first fetch
+      if (loading) setLoading(false);
     });
 
     const unsubPurchases = onSnapshot(collection(db, "purchases"), (snapshot) => {
@@ -79,11 +99,13 @@ export default function Analisis({ navigation }) {
     return <LoadingIndicator theme={theme} t={t} />;
   }
 
+  // Cálculo de estadísticas
   const totalProducts = products.length;
   const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0);
   const categories = [...new Set(products.map(p => p.category))];
   const lowStockProducts = products.filter(p => p.stock < LOW_STOCK_THRESHOLD);
 
+  // Datos para el gráfico de tarta de distribución de stock por categoría
   const categoryStock = categories.map(category => ({
     name: category,
     stock: products.filter(p => p.category === category).reduce((sum, p) => sum + p.stock, 0),
@@ -92,8 +114,10 @@ export default function Analisis({ navigation }) {
     legendFontSize: 15
   }));
 
+  // Datos para el gráfico de líneas de compras de la última semana
   const weeklyPurchasesData = processWeeklyData(purchases, t);
 
+  // Configuración común para los gráficos
   const chartConfig = {
     backgroundGradientFrom: theme.card,
     backgroundGradientTo: theme.card,
@@ -116,12 +140,14 @@ export default function Analisis({ navigation }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {/* Tarjetas de estadísticas principales */}
         <View style={styles.statsGrid}>
           <StatCard icon="archive" title={t('totalProducts')} value={totalProducts} theme={theme} />
           <StatCard icon="tags" title={t('numCategories')} value={categories.length} theme={theme} />
           <StatCard icon="dollar" title={t('inventoryValue')} value={`${totalValue.toFixed(2)}`} theme={theme} />
         </View>
 
+        {/* Gráfico de distribución por categoría */}
         <View style={styles.chartContainer}>
             <Text style={styles.sectionTitle}>{t('categoryDistribution')}</Text>
             {categoryStock.length > 0 ? (
@@ -138,6 +164,7 @@ export default function Analisis({ navigation }) {
             ) : <Text style={styles.noDataText}>{t('noDataForChart')}</Text>}
         </View>
 
+        {/* Gráfico de compras de la última semana */}
         <View style={styles.chartContainer}>
             <Text style={styles.sectionTitle}>{t('lastWeekPurchases')}</Text>
             <LineChart
@@ -160,12 +187,20 @@ export default function Analisis({ navigation }) {
             />
         </View>
 
+        {/* Lista de productos con bajo stock */}
         <LowStockList products={lowStockProducts} theme={theme} t={t} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+/**
+ * Componente que muestra un indicador de carga.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.theme - Objeto de tema.
+ * @param {function} props.t - Función de traducción.
+ * @returns {JSX.Element}
+ */
 const LoadingIndicator = ({ theme, t }) => {
     const styles = getStyles(theme);
     return (
@@ -176,6 +211,15 @@ const LoadingIndicator = ({ theme, t }) => {
     );
 };
 
+/**
+ * Componente para una tarjeta de estadística.
+ * @param {object} props - Propiedades del componente.
+ * @param {string} props.icon - Nombre del icono de FontAwesome.
+ * @param {string} props.title - Título de la tarjeta.
+ * @param {string|number} props.value - Valor a mostrar.
+ * @param {object} props.theme - Objeto de tema.
+ * @returns {JSX.Element}
+ */
 const StatCard = ({ icon, title, value, theme }) => {
     const styles = getStyles(theme);
     return (
@@ -187,6 +231,14 @@ const StatCard = ({ icon, title, value, theme }) => {
     );
 };
 
+/**
+ * Componente que muestra una lista de productos con bajo stock.
+ * @param {object} props - Propiedades del componente.
+ * @param {Array} props.products - Array de productos con bajo stock.
+ * @param {object} props.theme - Objeto de tema.
+ * @param {function} props.t - Función de traducción.
+ * @returns {JSX.Element}
+ */
 const LowStockList = ({ products, theme, t }) => {
     const styles = getStyles(theme);
     return (
@@ -206,6 +258,11 @@ const LowStockList = ({ products, theme, t }) => {
     );
 };
 
+/**
+ * Genera los estilos para el componente basados en el tema.
+ * @param {object} theme - El objeto de tema.
+ * @returns {object} - Objeto de estilos de StyleSheet.
+ */
 const getStyles = (theme) => StyleSheet.create({
   safeArea: { 
     flex: 1, 

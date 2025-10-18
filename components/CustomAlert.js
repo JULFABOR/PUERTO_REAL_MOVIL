@@ -1,15 +1,33 @@
+/**
+ * @file CustomAlert.js
+ * @description Un componente de alerta modal personalizable para la aplicación.
+ * @author [Tu Nombre]
+ */
+
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { FontAwesome } from '@expo/vector-icons';
 
+// --- Colores ---
 const TERRACOTTA = '#d96c3d';
 const DARK_GREY = '#3A3A3A';
 const SUCCESS_GREEN = '#2E7D32';
 const ERROR_RED = '#C62828';
 const LIGHT_GREY = '#E0E0E0';
 
+/**
+ * Un componente de alerta modal que puede mostrar un título, un mensaje y botones personalizables.
+ * @param {object} props - Propiedades del componente.
+ * @param {boolean} props.visible - Controla si la alerta está visible o no.
+ * @param {string} props.title - El título de la alerta.
+ * @param {string} props.message - El mensaje principal de la alerta.
+ * @param {function} props.onClose - Función que se llama cuando la alerta se cierra.
+ * @param {Array<object>} [props.buttons] - Un array de objetos de botón para acciones personalizadas. Si no se proporciona, se muestra un botón "Cerrar" por defecto.
+ * @returns {JSX.Element}
+ */
 const CustomAlert = ({ visible, title, message, onClose, buttons }) => {
+  // Determina el icono y el color según si el título contiene la palabra "error"
   const isError = title.toLowerCase().includes('error');
   const iconName = isError ? 'exclamation-triangle' : 'check-circle';
   const iconColor = isError ? ERROR_RED : SUCCESS_GREEN;
@@ -26,6 +44,8 @@ const CustomAlert = ({ visible, title, message, onClose, buttons }) => {
           <FontAwesome name={iconName} size={32} color={iconColor} style={styles.iconTop} />
           <Text style={styles.modalTitle}>{title}</Text>
           <Text style={styles.modalTextCompact}>{message}</Text>
+          
+          {/* Renderiza los botones personalizados o el botón por defecto */}
           <View style={styles.buttonsContainer}>
             {buttons ? (
               buttons.map((button, index) => (
@@ -56,6 +76,7 @@ const CustomAlert = ({ visible, title, message, onClose, buttons }) => {
   );
 };
 
+// --- Hoja de Estilos ---
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,

@@ -1,15 +1,30 @@
+/**
+ * @file PreferencesScreen.js
+ * @description Pantalla para que el usuario configure sus preferencias, como el tema y el idioma.
+ * @author [Tu Nombre]
+ */
+
 import React, { useContext, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Switch, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { ThemeContext } from '../theme/ThemeContext';
 
+/**
+ * Componente de la pantalla de Preferencias.
+ * Permite al usuario cambiar el tema (claro/oscuro) y el idioma de la aplicación.
+ * @returns {JSX.Element}
+ */
 const PreferencesScreen = () => {
   const { isDarkMode, toggleTheme, theme } = useContext(ThemeContext);
   const { t, i18n } = useTranslation();
   const [showLanguageOptions, setShowLanguageOptions] = useState(false);
   const styles = getStyles(theme);
 
+  /**
+   * Cambia el idioma de la aplicación.
+   * @param {string} lng - El código del idioma a establecer (e.g., 'es', 'en').
+   */
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
     setShowLanguageOptions(false);
@@ -21,6 +36,7 @@ const PreferencesScreen = () => {
         <Text style={styles.headerTitle}>{t('preferences')}</Text>
       </View>
       
+      {/* Sección de Apariencia */}
       <View style={styles.card}>
         <PreferenceItem
           label={t('darkMode')}
@@ -31,6 +47,7 @@ const PreferencesScreen = () => {
         />
       </View>
 
+      {/* Sección de Cuenta (Idioma) */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t('account')}</Text>
         <OptionButton 
@@ -61,6 +78,16 @@ const PreferencesScreen = () => {
   );
 };
 
+/**
+ * Componente para un item de preferencia con un interruptor (Switch).
+ * @param {object} props - Propiedades del componente.
+ * @param {string} props.label - Etiqueta de la preferencia.
+ * @param {boolean} props.value - Valor actual del interruptor.
+ * @param {function} props.onValueChange - Función a llamar cuando cambia el valor.
+ * @param {string} props.icon - Nombre del icono de Ionicons.
+ * @param {object} props.theme - Objeto de tema para estilos.
+ * @returns {JSX.Element}
+ */
 const PreferenceItem = ({ label, value, onValueChange, icon, theme }) => {
     const styles = getStyles(theme);
     return (
@@ -78,6 +105,15 @@ const PreferenceItem = ({ label, value, onValueChange, icon, theme }) => {
     );
 };
 
+/**
+ * Componente para un botón de opción que puede ejecutar una acción.
+ * @param {object} props - Propiedades del componente.
+ * @param {string} props.text - Texto del botón.
+ * @param {string} props.icon - Nombre del icono de Ionicons.
+ * @param {object} props.theme - Objeto de tema para estilos.
+ * @param {function} props.onPress - Función a ejecutar al presionar.
+ * @returns {JSX.Element}
+ */
 const OptionButton = ({ text, icon, theme, onPress }) => {
     const styles = getStyles(theme);
     return (
@@ -89,6 +125,11 @@ const OptionButton = ({ text, icon, theme, onPress }) => {
     );
 };
 
+/**
+ * Genera los estilos para el componente basados en el tema.
+ * @param {object} theme - El objeto de tema.
+ * @returns {object} - Objeto de estilos de StyleSheet.
+ */
 const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
@@ -139,7 +180,7 @@ const getStyles = (theme) => StyleSheet.create({
     color: theme.text,
   },
   languageOptionsContainer: {
-    paddingLeft: 55, // Align with labels
+    paddingLeft: 55, // Alineado con las etiquetas
     paddingBottom: 10,
   },
   languageButton: {

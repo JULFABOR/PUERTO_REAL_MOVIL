@@ -1,3 +1,9 @@
+/**
+ * @file Home.js
+ * @description Pantalla principal de la aplicación que muestra las opciones de navegación a las diferentes secciones.
+ * @author [Tu Nombre]
+ */
+
 import React, { useState, useContext } from 'react';
 import {
   View,
@@ -15,6 +21,11 @@ import CustomAlert from '../components/CustomAlert';
 import { ThemeContext } from '../theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 
+/**
+ * Componente de la pantalla de inicio.
+ * Muestra tarjetas de navegación a las principales funcionalidades de la app.
+ * @returns {JSX.Element}
+ */
 export default function Home() {
   const navigation = useNavigation();
   const { theme } = useContext(ThemeContext);
@@ -24,6 +35,11 @@ export default function Home() {
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
 
+  /**
+   * Muestra una alerta personalizada.
+   * @param {string} title - Título de la alerta.
+   * @param {string} message - Mensaje de la alerta.
+   */
   const showAlert = (title, message) => {
     setAlertTitle(title);
     setAlertMessage(message);
@@ -37,16 +53,21 @@ export default function Home() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {/* Tarjeta de navegación a Control de Compras */}
         <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('ControlCompras')}>
           <FontAwesome name="shopping-cart" size={40} color={theme.primary} style={styles.cardIcon} />
           <Text style={styles.cardTitle}>{t('home.purchases')}</Text>
           <Text style={styles.cardDescription}>{t('home.purchasesDescription')}</Text>
         </TouchableOpacity>
+        
+        {/* Tarjeta de navegación a Gestión de Proveedores */}
         <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('GestionProveedores')}>
           <FontAwesome name="truck" size={40} color={theme.primary} style={styles.cardIcon} />
           <Text style={styles.cardTitle}>{t('home.suppliers')}</Text>
           <Text style={styles.cardDescription}>{t('home.suppliersDescription')}</Text>
         </TouchableOpacity>
+        
+        {/* Tarjeta de navegación a Gestión de Stock */}
         <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('GestionStock')}>
           <FontAwesome name="codepen" size={40} color={theme.primary} style={styles.cardIcon} />
           <Text style={styles.cardTitle}>{t('home.stock')}</Text>
@@ -64,6 +85,11 @@ export default function Home() {
   );
 }
 
+/**
+ * Genera los estilos para el componente basados en el tema.
+ * @param {object} theme - El objeto de tema.
+ * @returns {object} - Objeto de estilos de StyleSheet.
+ */
 const getStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,

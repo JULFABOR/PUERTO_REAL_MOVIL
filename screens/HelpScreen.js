@@ -1,14 +1,26 @@
+/**
+ * @file HelpScreen.js
+ * @description Pantalla de ayuda con preguntas frecuentes (FAQ) y contacto.
+ * @author [Tu Nombre]
+ */
+
 import React, { useContext } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeContext } from '../theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 
+/**
+ * Componente de la pantalla de Ayuda.
+ * Muestra una lista de preguntas frecuentes y una opción de contacto.
+ * @returns {JSX.Element}
+ */
 const HelpScreen = () => {
   const { theme } = useContext(ThemeContext);
   const { t } = useTranslation();
   const styles = getStyles(theme);
 
+  // Lista de preguntas y respuestas frecuentes
   const faqs = [
     {
       q: t('help.q1'),
@@ -32,6 +44,10 @@ const HelpScreen = () => {
     }
   ];
 
+  /**
+   * Maneja la acción de presionar el botón de contacto.
+   * Abre el cliente de correo electrónico del dispositivo.
+   */
   const handleContactPress = () => {
     Linking.openURL(t('help.contactEmail'));
   }
@@ -42,6 +58,7 @@ const HelpScreen = () => {
         <Text style={styles.headerTitle}>{t('help.title')}</Text>
       </View>
 
+      {/* Sección de Preguntas Frecuentes */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t('help.faqTitle')}</Text>
         {faqs.map((faq, index) => (
@@ -52,8 +69,9 @@ const HelpScreen = () => {
         ))}
       </View>
 
+      {/* Sección de Contacto */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Contacto</Text>
+        <Text style={styles.cardTitle}>{t('help.contact')}</Text>
         <TouchableOpacity style={styles.contactButton} onPress={handleContactPress}>
             <Ionicons name="mail-outline" size={24} color={theme.primary} />
             <Text style={styles.contactText}>{t('help.contactButton')}</Text>
@@ -64,6 +82,11 @@ const HelpScreen = () => {
   );
 };
 
+/**
+ * Genera los estilos para el componente basados en el tema.
+ * @param {object} theme - El objeto de tema.
+ * @returns {object} - Objeto de estilos de StyleSheet.
+ */
 const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
