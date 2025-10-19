@@ -364,6 +364,8 @@ export default function UserDashboard({ navigation }) {
         title={t("selectImageTitle") || "Seleccionar Imagen"}
         message={t("selectImageMessage") || "Elige una opción para tu foto de perfil."}
         onClose={() => setSelectImageAlertVisible(false)}
+        showIcon={false}
+        buttonLayout='column'
         buttons={[
           {
             text: t("camera") || "Cámara",
@@ -372,11 +374,6 @@ export default function UserDashboard({ navigation }) {
           {
             text: t("gallery") || "Galería",
             onPress: () => handleSelectImageOption(pickImageFromGallery),
-          },
-          {
-            text: t("cancel") || "Cancelar",
-            onPress: () => setSelectImageAlertVisible(false),
-            style: 'cancel',
           },
         ]}
       />

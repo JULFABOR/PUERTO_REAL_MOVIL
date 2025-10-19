@@ -26,34 +26,43 @@ import { useTranslation } from 'react-i18next';
 const LOW_STOCK_THRESHOLD = 50;
 
 /**
- * Procesa los datos de compras semanales para el gráfico de líneas.
+ * Procesa los datos de compras mensuales para el gráfico de líneas.
  * @param {Array} purchases - Array de objetos de compras.
  * @param {function} t - Función de traducción.
  * @returns {object} - Datos procesados para el gráfico.
  */
-const processWeeklyData = (purchases, t) => {
-  const labels = [];
-  const data = Array(7).fill(0);
+const processMonthlyData = (purchases, t) => {
+  const data = Array(30).fill(null);
+  const labels = Array(30).fill('');
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    labels.push(t(d.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase()));
-  }
+  const thirtyDaysAgo = new Date(today);
+  thirtyDaysAgo.setDate(today.getDate() - 29);
 
   purchases.forEach(purchase => {
     if (purchase.fecha && typeof purchase.fecha.toDate === 'function') {
       const purchaseDate = purchase.fecha.toDate();
-      const diffTime = today - purchaseDate;
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      purchaseDate.setHours(0, 0, 0, 0);
 
-      if (diffDays >= 0 && diffDays < 7) {
-        const dayIndex = 6 - diffDays;
-        data[dayIndex] += purchase.importe || 0;
+      if (purchaseDate >= thirtyDaysAgo && purchaseDate <= today) {
+        const diffTime = today.getTime() - purchaseDate.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const dayIndex = 29 - diffDays;
+        if (dayIndex >= 0 && dayIndex < 30) {
+          data[dayIndex] = (data[dayIndex] || 0) + (purchase.importe || 0);
+        }
       }
     }
   });
+
+  for (let i = 0; i < 30; i++) {
+    if (i % 5 === 0) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (29 - i));
+      labels[i] = `${d.getDate()}/${d.getMonth() + 1}`;
+    }
+  }
 
   return { labels, datasets: [{ data }] };
 };
@@ -84,7 +93,7 @@ export default function Analisis({ navigation }) {
       if (loading) setLoading(false);
     });
 
-    const unsubPurchases = onSnapshot(collection(db, "purchases"), (snapshot) => {
+    const unsubPurchases = onSnapshot(collection(db, "compras"), (snapshot) => {
       const purchasesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPurchases(purchasesData);
     });
@@ -114,8 +123,9 @@ export default function Analisis({ navigation }) {
     legendFontSize: 15
   }));
 
-  // Datos para el gráfico de líneas de compras de la última semana
-  const weeklyPurchasesData = processWeeklyData(purchases, t);
+  // Datos para el gráfico de líneas de compras del ultimo mes
+  const monthlyPurchasesData = processMonthlyData(purchases, t);
+  const hasMonthlyData = monthlyPurchasesData.datasets[0].data.some(d => d !== null);
 
   // Configuración común para los gráficos
   const chartConfig = {
@@ -164,27 +174,28 @@ export default function Analisis({ navigation }) {
             ) : <Text style={styles.noDataText}>{t('noDataForChart')}</Text>}
         </View>
 
-        {/* Gráfico de compras de la última semana */}
+        {/* Gráfico de compras del último mes */}
         <View style={styles.chartContainer}>
-            <Text style={styles.sectionTitle}>{t('lastWeekPurchases')}</Text>
-            <LineChart
-                data={weeklyPurchasesData}
-                width={Dimensions.get("window").width - 70}
-                height={220}
-                yAxisLabel="$"
-                chartConfig={{
-                    ...chartConfig,
-                    backgroundGradientFrom: theme.primary,
-                    backgroundGradientTo: theme.primary,
-                    color: (opacity = 1) => theme.card,
-                    labelColor: (opacity = 1) => theme.card,
-                }}
-                bezier
-                style={{
-                    marginVertical: 8,
-                    borderRadius: 16,
-                }}
-            />
+            <Text style={styles.sectionTitle}>{t('lastMonthPurchases')}</Text>
+            {hasMonthlyData ? (
+              <LineChart
+                  data={monthlyPurchasesData}
+                  width={Dimensions.get("window").width - 70}
+                  height={220}
+                  yAxisLabel="$"
+                  chartConfig={{
+                      ...chartConfig,
+                      backgroundGradientFrom: theme.primary,
+                      backgroundGradientTo: theme.primary,
+                      color: (opacity = 1) => theme.card,
+                      labelColor: (opacity = 1) => theme.card,
+                  }}
+                  style={{
+                      marginVertical: 8,
+                      borderRadius: 16,
+                  }}
+              />
+            ) : <Text style={styles.noDataText}>{t('noDataForChart')}</Text>}
         </View>
 
         {/* Lista de productos con bajo stock */}

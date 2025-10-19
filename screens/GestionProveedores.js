@@ -17,6 +17,8 @@ import {
   ScrollView,
   ImageBackground,
   Platform,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { db } from '../src/config/firebaseConfig';
@@ -25,6 +27,8 @@ import CustomAlert from '../components/CustomAlert';
 import { useTranslation } from 'react-i18next';
 import { ThemeContext } from '../theme/ThemeContext';
 import { getCrudStyles } from '../theme/crudStyles';
+import * as ImagePicker from 'expo-image-picker';
+import { cloudinaryConfig } from '../src/config/cloudinaryConfig';
 
 const BACKGROUND_IMAGE = require('../assets/wine-cellar-573833.jpg');
 
@@ -45,6 +49,8 @@ const ProveedorForm = ({ visible, onClose, onSave, proveedor, theme }) => {
   const [contactPerson, setContactPerson] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [photoURL, setPhotoURL] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   /**
    * Efecto para poblar el formulario cuando se selecciona un proveedor para editar.
@@ -55,11 +61,13 @@ const ProveedorForm = ({ visible, onClose, onSave, proveedor, theme }) => {
       setContactPerson(proveedor.contactPerson || '');
       setPhone(proveedor.phone || '');
       setEmail(proveedor.email || '');
+      setPhotoURL(proveedor.photoURL || null);
     } else {
       setName('');
       setContactPerson('');
       setPhone('');
       setEmail('');
+      setPhotoURL(null);
     }
   }, [proveedor]);
 
@@ -67,7 +75,68 @@ const ProveedorForm = ({ visible, onClose, onSave, proveedor, theme }) => {
    * Maneja el guardado de los datos del proveedor.
    */
   const handleSave = () => {
-    onSave({ name, contactPerson, phone, email });
+    onSave({ name, contactPerson, phone, email, photoURL });
+  };
+
+  const pickImageFromGallery = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert(t('permissionDenied'));
+        return;
+      }
+
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+
+      if (!result.canceled) {
+        uploadImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Error in pickImageFromGallery:", error);
+      alert('Error', 'Ocurrió un error al seleccionar una imagen de la galería.');
+    }
+  };
+
+  const uploadImage = async (uri) => {
+    setUploading(true);
+    const uriParts = uri.split('.');
+    const fileType = uriParts[uriParts.length - 1];
+
+    const formData = new FormData();
+    formData.append('file', {
+      uri,
+      name: `photo.${fileType}`,
+      type: `image/${fileType}`,
+    });
+    formData.append('upload_preset', cloudinaryConfig.upload_preset);
+
+    try {
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloud_name}/image/upload`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.secure_url) {
+        setPhotoURL(data.secure_url);
+      } else {
+        throw new Error('Image upload failed. See console for details.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert(t('error'), t('imageUploadError'));
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -84,6 +153,16 @@ const ProveedorForm = ({ visible, onClose, onSave, proveedor, theme }) => {
                 <TouchableOpacity onPress={onClose}><FontAwesome name="times-circle" size={30} color={theme.text} /></TouchableOpacity>
             </View>
             <ScrollView>
+                <TouchableOpacity onPress={pickImageFromGallery} style={styles.profilePicContainer}>
+                  {uploading ? (
+                    <ActivityIndicator size="large" color={theme.primary} />
+                  ) : photoURL ? (
+                    <Image source={{ uri: photoURL }} style={styles.profilePic} />
+                  ) : (
+                    <FontAwesome name="camera" size={40} color={theme.text} />
+                  )}
+                </TouchableOpacity>
+
                 <Text style={styles.formLabel}>{t('suppliers.companyName')}</Text>
                 <TextInput style={styles.formInput} placeholder={t('suppliers.companyNamePlaceholder')} value={name} onChangeText={setName} placeholderTextColor={theme.text} />
                 
@@ -310,11 +389,18 @@ const ProveedorItem = ({ item, onEdit, onDelete, theme }) => {
   const styles = getCrudStyles(theme);
   return (
     <View style={styles.card}>
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        <Text style={styles.cardInfo}><FontAwesome name="user" /> {item.contactPerson}</Text>
-        <Text style={styles.cardInfo}><FontAwesome name="phone" /> {item.phone}</Text>
-        <Text style={styles.cardInfo}><FontAwesome name="envelope" /> {item.email}</Text>
+      <View style={{...styles.cardContent, flexDirection: 'row'}}>
+        {item.photoURL ? (
+          <Image source={{ uri: item.photoURL }} style={styles.cardImage} />
+        ) : (
+          <FontAwesome name="user-circle" size={50} color={theme.text} style={{marginRight: 15}} />
+        )}
+        <View style={{flex: 1}}>
+          <Text style={styles.cardTitle}>{item.name}</Text>
+          <Text style={styles.cardInfo}><FontAwesome name="user" /> {item.contactPerson}</Text>
+          <Text style={styles.cardInfo}><FontAwesome name="phone" /> {item.phone}</Text>
+          <Text style={styles.cardInfo}><FontAwesome name="envelope" /> {item.email}</Text>
+        </View>
       </View>
       <View style={styles.cardActions}>
         <TouchableOpacity onPress={() => onEdit(item)} style={styles.actionButton}><FontAwesome name="pencil" size={20} color={theme.text} /></TouchableOpacity>

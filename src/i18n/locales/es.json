@@ -93,6 +93,7 @@
   "noDataForChart": "No hay datos para mostrar el gráfico.",
   "lastWeekActivity": "Actividad de la Última Semana",
   "lastWeekPurchases": "Compras (Últimos 7 días)",
+  "lastMonthPurchases": "Compras (Últimos 30 días)",
   "mon": "Lun",
   "tue": "Mar",
   "wed": "Mié",

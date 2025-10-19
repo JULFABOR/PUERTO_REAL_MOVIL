@@ -25,8 +25,7 @@ const LIGHT_GREY = '#E0E0E0';
  * @param {Array<object>} [props.buttons] - Un array de objetos de botón para acciones personalizadas. Si no se proporciona, se muestra un botón "Cerrar" por defecto.
  * @returns {JSX.Element}
  */
-const CustomAlert = ({ visible, title, message, onClose, buttons }) => {
-  // Determina el icono y el color según si el título contiene la palabra "error"
+const CustomAlert = ({ visible, title, message, onClose, buttons, showIcon = true, buttonLayout = 'row' }) => {
   const isError = title.toLowerCase().includes('error');
   const iconName = isError ? 'exclamation-triangle' : 'check-circle';
   const iconColor = isError ? ERROR_RED : SUCCESS_GREEN;
@@ -40,12 +39,11 @@ const CustomAlert = ({ visible, title, message, onClose, buttons }) => {
     >
       <View style={styles.centeredView}>
         <BlurView intensity={100} tint="light" style={styles.modalViewCompact}>
-          <FontAwesome name={iconName} size={32} color={iconColor} style={styles.iconTop} />
+          {showIcon && <FontAwesome name={iconName} size={32} color={iconColor} style={styles.iconTop} />}
           <Text style={styles.modalTitle}>{title}</Text>
           <Text style={styles.modalTextCompact}>{message}</Text>
           
-          {/* Renderiza los botones personalizados o el botón por defecto */}
-          <View style={styles.buttonsContainer}>
+          <View style={[styles.buttonsContainer, { flexDirection: buttonLayout, alignItems: buttonLayout === 'column' ? 'center' : 'stretch' }]}>
             {buttons ? (
               buttons.map((button, index) => (
                 <TouchableOpacity
@@ -54,6 +52,7 @@ const CustomAlert = ({ visible, title, message, onClose, buttons }) => {
                     styles.buttonCompact,
                     button.style === 'destructive' && styles.destructiveButton,
                     button.style === 'cancel' && styles.cancelButton,
+                    buttonLayout === 'column' && { marginBottom: 10 }
                   ]}
                   onPress={button.onPress}
                 >

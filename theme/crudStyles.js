@@ -25,6 +25,7 @@ export const getCrudStyles = (theme) => StyleSheet.create({
   cardPrice: { fontFamily: 'Roboto-Bold', fontSize: 16, color: theme.primary },
   cardActions: { flexDirection: 'column', borderLeftWidth: 1, borderLeftColor: theme.border, paddingLeft: 15, marginLeft: 15 },
   actionButton: { padding: 10 },
+  cardImage: { width: 50, height: 50, borderRadius: 25, marginRight: 15 },
 
   // Modal Styles
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', alignItems: 'center' },
@@ -56,4 +57,23 @@ export const getCrudStyles = (theme) => StyleSheet.create({
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15, paddingTop: 15, borderTopWidth: 1, borderTopColor: theme.border },
   summaryLabel: { fontFamily: 'Roboto-Regular', fontSize: 18, color: theme.text },
   summaryValue: { fontFamily: 'Roboto-Bold', fontSize: 20, color: theme.primary },
+
+  // Profile Picture
+  profilePicContainer: {
+    alignSelf: 'center',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.background,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: theme.primary,
+  },
+  profilePic: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 50,
+  },
 });
