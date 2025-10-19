@@ -1,7 +1,6 @@
 /**
  * @file PreferencesScreen.js
  * @description Pantalla para que el usuario configure sus preferencias, como el tema y el idioma.
- * @author [Tu Nombre]
  */
 
 import React, { useContext, useState } from 'react';

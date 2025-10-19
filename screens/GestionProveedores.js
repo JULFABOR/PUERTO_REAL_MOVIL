@@ -1,7 +1,6 @@
 /**
  * @file GestionProveedores.js
  * @description Pantalla para la gestión de proveedores, incluyendo operaciones CRUD.
- * @author [Tu Nombre]
  */
 
 import React, { useState, useEffect, useContext } from 'react';

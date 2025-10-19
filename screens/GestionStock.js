@@ -1,7 +1,6 @@
 /**
  * @file GestionStock.js
  * @description Pantalla para la gestión de productos en stock, permitiendo operaciones CRUD.
- * @author [Tu Nombre]
  */
 
 import React, { useState, useEffect, useContext } from 'react';

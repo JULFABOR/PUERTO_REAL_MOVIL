@@ -1,7 +1,6 @@
 /**
  * @file firebaseConfig.js
  * @description Inicialización y configuración de los servicios de Firebase.
- * @author [Tu Nombre]
  */
 
 import { initializeApp } from 'firebase/app';

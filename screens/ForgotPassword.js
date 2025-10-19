@@ -1,7 +1,6 @@
 /**
  * @file ForgotPassword.js
  * @description Pantalla para que los usuarios puedan restablecer su contraseña.
- * @author [Tu Nombre]
  */
 
 import React, { useState, useCallback } from 'react';

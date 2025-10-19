@@ -1,7 +1,6 @@
 /**
  * @file SignUp.js
  * @description Pantalla de registro para nuevos usuarios.
- * @author [Tu Nombre]
  */
 
 import React, { useState, useEffect } from 'react';

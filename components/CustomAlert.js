@@ -1,7 +1,6 @@
 /**
  * @file CustomAlert.js
  * @description Un componente de alerta modal personalizable para la aplicación.
- * @author [Tu Nombre]
  */
 
 import React from 'react';

@@ -27,6 +27,7 @@
   "fillAllFields": "Por favor, rellena todos los campos.",
   "wrongPassword": "La contraseña actual es incorrecta o ha ocurrido un error.",
   "logoutError": "Hubo un problema al cerrar sesión.",
+  "logoutErrorTitle": "Error al Cerrar Sesión",
   "imageUploadError": "Hubo un problema al subir la imagen.",
   "preferences": "Preferencias",
   "enableNotifications": "Activar Notificaciones",

@@ -1,7 +1,6 @@
 /**
  * @file Home.js
  * @description Pantalla principal de la aplicación que muestra las opciones de navegación a las diferentes secciones.
- * @author [Tu Nombre]
  */
 
 import React, { useState, useContext } from 'react';

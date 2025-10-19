@@ -1,7 +1,6 @@
 /**
  * @file UserDashboard.js
  * @description Panel de control del usuario para gestionar su perfil, contraseña y preferencias.
- * @author [Tu Nombre]
  */
 
 import React, { useState, useEffect, useContext } from 'react';
@@ -94,9 +93,10 @@ export default function UserDashboard({ navigation }) {
   const handleLogOut = async () => {
     try {
       await signOut(auth);
-      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+      // El listener onAuthStateChanged en Navigation.js se encargará de la redirección.
     } catch (error) {
-      showAlert(t("error"), t("logoutError"));
+      console.error("Error during sign out: ", error);
+      showAlert(t("logoutErrorTitle") || "Error", t("logoutError"));
     }
   };
 

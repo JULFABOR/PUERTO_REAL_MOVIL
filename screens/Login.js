@@ -1,7 +1,6 @@
 /**
  * @file Login.js
  * @description Pantalla de inicio de sesión de usuario.
- * @author [Tu Nombre]
  */
 
 import React, { useState, useRef } from 'react';

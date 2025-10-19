@@ -5,7 +5,7 @@ import en from './locales/en.json';
 
 i18n.use(initReactI18next).init({
   compatibilityJSON: 'v3',
-  lng: 'es', // default language
+  lng: 'es', // lenguaje por defecto
   fallbackLng: 'es',
   resources: {
     es: {
@@ -16,7 +16,7 @@ i18n.use(initReactI18next).init({
     },
   },
   interpolation: {
-    escapeValue: false, // react already safes from xss
+    escapeValue: false, // react ya se encarga de esto
   },
 });
 

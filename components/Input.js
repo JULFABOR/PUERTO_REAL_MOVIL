@@ -1,7 +1,6 @@
 /**
  * @file Input.js
  * @description Un componente de campo de texto reutilizable con icono y validación opcional.
- * @author [Tu Nombre]
  */
 
 import React, { useState } from 'react';

@@ -1,7 +1,6 @@
 /**
  * @file validaciones.js
  * @description Funciones de validación reutilizables para campos de texto.
- * @author [Tu Nombre]
  */
 
 /**

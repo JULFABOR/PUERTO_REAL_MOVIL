@@ -1,7 +1,6 @@
 /**
  * @file HelpScreen.js
  * @description Pantalla de ayuda con preguntas frecuentes (FAQ) y contacto.
- * @author [Tu Nombre]
  */
 
 import React, { useContext } from 'react';

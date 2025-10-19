@@ -1,7 +1,6 @@
 /**
  * @file Welcome.js
  * @description Pantalla de bienvenida con animación y navegación automática a la pantalla de Login.
- * @author [Tu Nombre]
  */
 
 import React, { useRef, useCallback } from 'react';

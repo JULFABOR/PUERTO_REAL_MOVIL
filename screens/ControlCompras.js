@@ -1,7 +1,6 @@
 /**
  * @file ControlCompras.js
  * @description Pantalla para la gestión de compras, incluyendo operaciones CRUD.
- * @author [Tu Nombre]
  */
 
 import React, { useState, useEffect, useContext } from 'react';

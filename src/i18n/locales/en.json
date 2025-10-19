@@ -27,6 +27,7 @@
   "fillAllFields": "Please fill in all fields.",
   "wrongPassword": "The current password is incorrect or an error occurred.",
   "logoutError": "There was a problem logging out.",
+  "logoutErrorTitle": "Logout Error",
   "imageUploadError": "There was a problem uploading the image.",
   "preferences": "Preferences",
   "enableNotifications": "Enable Notifications",
