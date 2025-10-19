@@ -9,6 +9,6 @@
  * @property {string} upload_preset - El preset de subida que has configurado en Cloudinary.
  */
 export const cloudinaryConfig = {
-    cloud_name: 'ddgfobpbau', // Reemplaza con tu cloud_name
-    upload_preset: 'puertoreal_preset', // Reemplaza con tu upload_preset
+    cloud_name: 'dgfobpbau', // Reemplazar con el cloud_name
+    upload_preset: 'puertoreal_preset', // Reemplazar con el upload_preset
 };

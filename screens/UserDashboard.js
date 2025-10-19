@@ -18,6 +18,7 @@ import {
   Image,
   ActivityIndicator,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword, updateProfile } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
@@ -44,6 +45,7 @@ export default function UserDashboard({ navigation }) {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
+  const [selectImageAlertVisible, setSelectImageAlertVisible] = useState(false);
   
   // Estados para la visibilidad de los modales
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
@@ -114,10 +116,16 @@ export default function UserDashboard({ navigation }) {
         return;
     }
 
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        showAlert(t("error"), "User not found.");
+        return;
+    }
+
     try {
-        const credential = EmailAuthProvider.credential(user.email, currentPassword);
-        await reauthenticateWithCredential(user, credential);
-        await updatePassword(user, newPassword);
+        const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+        await reauthenticateWithCredential(currentUser, credential);
+        await updatePassword(currentUser, newPassword);
         setPasswordModalVisible(false);
         // Limpiar campos
         setCurrentPassword('');
@@ -137,9 +145,16 @@ export default function UserDashboard({ navigation }) {
         showAlert(t("error"), t("nameAndSurnameRequired"));
         return;
     }
+
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        showAlert(t("error"), "User not found.");
+        return;
+    }
+
     try {
         const displayName = `${nombre.trim()} ${apellido.trim()}`;
-        await updateProfile(user, { displayName });
+        await updateProfile(currentUser, { displayName });
         setProfileModalVisible(false);        
         showAlert(t("success"), t("profileUpdated"));
     } catch (error) {
@@ -148,26 +163,89 @@ export default function UserDashboard({ navigation }) {
   };
 
   /**
-   * Abre el selector de imágenes para cambiar la foto de perfil.
+   * Muestra un diálogo para que el usuario elija entre la cámara y la galería.
    */
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      showAlert(t('permissionDenied'), t('permissionDeniedMessage'));
-      return;
-    }
+  const selectImage = () => {
+    console.log("selectImage: Mostrando opciones de selección de imagen.");
+    setSelectImageAlertVisible(true);
+  };
 
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaType.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
+  const handleSelectImageOption = (action) => {
+    setSelectImageAlertVisible(false);
+    action();
+  };
 
-    if (!result.canceled) {
-      uploadImage(result.assets[0].uri);
+  /**
+   * Abre la cámara para tomar una foto.
+   */
+  const takePhotoFromCamera = async () => {
+    console.log("takePhotoFromCamera: Iniciando proceso de cámara.");
+    try {
+      console.log("takePhotoFromCamera: Solicitando permisos de cámara...");
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      console.log("takePhotoFromCamera: Estado del permiso de cámara:", status);
+
+      if (status !== 'granted') {
+        showAlert(t('permissionDenied'), t('cameraPermissionDeniedMessage'));
+        return;
+      }
+
+      console.log("takePhotoFromCamera: Permiso concedido. Abriendo cámara...");
+      let result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+      console.log("takePhotoFromCamera: Resultado de la cámara:", result);
+
+      if (!result.canceled) {
+        console.log("takePhotoFromCamera: Foto tomada. Subiendo imagen:", result.assets[0].uri);
+        uploadImage(result.assets[0].uri);
+      } else {
+        console.log("takePhotoFromCamera: El usuario canceló la cámara.");
+      }
+    } catch (error) {
+      console.error("Error en takePhotoFromCamera:", error);
+      showAlert('Error', 'Ocurrió un error al usar la cámara.');
     }
   };
+
+  /**
+   * Abre la galería para seleccionar una imagen.
+   */
+  const pickImageFromGallery = async () => {
+    console.log("pickImageFromGallery: Iniciando proceso de galería.");
+    try {
+      console.log("pickImageFromGallery: Solicitando permisos de la galería...");
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      console.log("pickImageFromGallery: Estado del permiso de la galería:", status);
+
+      if (status !== 'granted') {
+        showAlert(t('permissionDenied'), t('galleryPermissionDeniedMessage'));
+        return;
+      }
+
+      console.log("pickImageFromGallery: Permiso concedido. Abriendo galería...");
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: 'Images',
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+      console.log("pickImageFromGallery: Resultado de la galería:", result);
+
+      if (!result.canceled) {
+        console.log("pickImageFromGallery: Imagen seleccionada. Subiendo imagen:", result.assets[0].uri);
+        uploadImage(result.assets[0].uri);
+      } else {
+        console.log("pickImageFromGallery: El usuario canceló la selección de la galería.");
+      }
+    } catch (error) {
+      console.error("Error en pickImageFromGallery:", error);
+      showAlert('Error', 'Ocurrió un error al seleccionar una imagen de la galería.');
+    }
+  };
+
 
   /**
    * Sube la imagen seleccionada a Cloudinary y actualiza el perfil del usuario.
@@ -196,16 +274,18 @@ export default function UserDashboard({ navigation }) {
       });
 
       const data = await response.json();
+      const currentUser = auth.currentUser;
 
-      if (data.secure_url) {
-        await updateProfile(user, { photoURL: data.secure_url });
-        setUser({ ...user, photoURL: data.secure_url });
+      if (data.secure_url && currentUser) {
+        await updateProfile(currentUser, { photoURL: data.secure_url });
+        setUser({ ...currentUser, photoURL: data.secure_url });
         showAlert(t('success'), t('profileUpdated'));
       } else {
-        throw new Error('Image upload failed');
+        console.error("Cloudinary upload failed or user not found. Response:", data);
+        throw new Error('Image upload failed. See console for details.');
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       showAlert(t('error'), t('imageUploadError'));
     } finally {
       setUploading(false);
@@ -221,7 +301,7 @@ export default function UserDashboard({ navigation }) {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Cabecera con información del usuario */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={pickImage} style={styles.profilePicContainer}>
+          <TouchableOpacity onPress={selectImage} style={styles.profilePicContainer}>
             {uploading ? (
               <ActivityIndicator size="large" color={theme.card} />
             ) : user?.photoURL ? (
@@ -277,6 +357,28 @@ export default function UserDashboard({ navigation }) {
         title={alertTitle}
         message={alertMessage}
         onClose={() => setAlertVisible(false)}
+      />
+
+      <CustomAlert
+        visible={selectImageAlertVisible}
+        title={t("selectImageTitle") || "Seleccionar Imagen"}
+        message={t("selectImageMessage") || "Elige una opción para tu foto de perfil."}
+        onClose={() => setSelectImageAlertVisible(false)}
+        buttons={[
+          {
+            text: t("camera") || "Cámara",
+            onPress: () => handleSelectImageOption(takePhotoFromCamera),
+          },
+          {
+            text: t("gallery") || "Galería",
+            onPress: () => handleSelectImageOption(pickImageFromGallery),
+          },
+          {
+            text: t("cancel") || "Cancelar",
+            onPress: () => setSelectImageAlertVisible(false),
+            style: 'cancel',
+          },
+        ]}
       />
 
       {/* Modal para editar perfil */}
