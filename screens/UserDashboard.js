@@ -20,7 +20,7 @@ import {
   StatusBar,
   Alert,
 } from 'react-native';
-import { signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword, updateProfile } from 'firebase/auth';
+import { signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword, updateProfile, updateEmail } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 import * as ImagePicker from 'expo-image-picker';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
@@ -50,6 +50,8 @@ export default function UserDashboard({ navigation }) {
   // Estados para la visibilidad de los modales
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [imagePreviewVisible, setImagePreviewVisible] = useState(false);
+  const [logoutAlertVisible, setLogoutAlertVisible] = useState(false);
 
   // Estados para el cambio de contraseña
   const [currentPassword, setCurrentPassword] = useState('');
@@ -59,6 +61,8 @@ export default function UserDashboard({ navigation }) {
   // Estados para la edición del perfil
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
+  const [email, setEmail] = useState('');
+  const [passwordForEmailChange, setPasswordForEmailChange] = useState('');
   
   // Estado para la subida de imagen
   const [uploading, setUploading] = useState(false);
@@ -73,6 +77,7 @@ export default function UserDashboard({ navigation }) {
         const nameParts = currentUser.displayName?.split(' ') || ['', ''];
         setNombre(nameParts[0] || '');
         setApellido(nameParts.slice(1).join(' ') || '');
+        setEmail(currentUser.email);
       }
     });
     return unsubscribe;
@@ -90,9 +95,16 @@ export default function UserDashboard({ navigation }) {
   };
 
   /**
-   * Cierra la sesión del usuario y navega a la pantalla de Login.
+   * Muestra el diálogo de confirmación para cerrar sesión.
    */
-  const handleLogOut = async () => {
+  const handleLogOut = () => {
+    setLogoutAlertVisible(true);
+  };
+
+  /**
+   * Cierra la sesión del usuario.
+   */
+  const executeLogout = async () => {
     try {
       await signOut(auth);
       // El listener onAuthStateChanged en Navigation.js se encargará de la redirección.
@@ -138,7 +150,7 @@ export default function UserDashboard({ navigation }) {
   };
 
   /**
-   * Actualiza el nombre y apellido del usuario.
+   * Actualiza el perfil del usuario (nombre, apellido, email).
    */
   const handleUpdateProfile = async () => {
     if (!nombre.trim() || !apellido.trim()) {
@@ -155,7 +167,18 @@ export default function UserDashboard({ navigation }) {
     try {
         const displayName = `${nombre.trim()} ${apellido.trim()}`;
         await updateProfile(currentUser, { displayName });
-        setProfileModalVisible(false);        
+
+        if (email !== currentUser.email) {
+            if (!passwordForEmailChange) {
+                showAlert(t("error"), t("passwordRequiredForEmailChange"));
+                return;
+            }
+            const credential = EmailAuthProvider.credential(currentUser.email, passwordForEmailChange);
+            await reauthenticateWithCredential(currentUser, credential);
+            await updateEmail(currentUser, email);
+        }
+
+        setProfileModalVisible(false);
         showAlert(t("success"), t("profileUpdated"));
     } catch (error) {
         showAlert(t("error"), t("profileUpdateFailed"));
@@ -301,7 +324,7 @@ export default function UserDashboard({ navigation }) {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Cabecera con información del usuario */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={selectImage} style={styles.profilePicContainer}>
+          <TouchableOpacity onPress={() => setImagePreviewVisible(true)} style={styles.profilePicContainer}>
             {uploading ? (
               <ActivityIndicator size="large" color={theme.card} />
             ) : user?.photoURL ? (
@@ -378,6 +401,28 @@ export default function UserDashboard({ navigation }) {
         ]}
       />
 
+      <CustomAlert
+        visible={logoutAlertVisible}
+        title={t("logout")}
+        message={t("logoutConfirmation")}
+        onClose={() => setLogoutAlertVisible(false)}
+        buttons={[
+            {
+                text: t("cancel"),
+                onPress: () => setLogoutAlertVisible(false),
+                style: 'cancel',
+            },
+            {
+                text: t("logout"),
+                onPress: () => {
+                    setLogoutAlertVisible(false);
+                    executeLogout();
+                },
+                style: 'destructive',
+            },
+        ]}
+      />
+
       {/* Modal para editar perfil */}
       <Modal
         animationType="slide"
@@ -390,6 +435,10 @@ export default function UserDashboard({ navigation }) {
                 <Text style={styles.modalTitle}>{t('editProfileTitle')}</Text>
                 <TextInput placeholder={t('name')} value={nombre} onChangeText={setNombre} style={styles.input} placeholderTextColor={theme.text}/>
                 <TextInput placeholder={t('surname')} value={apellido} onChangeText={setApellido} style={styles.input} placeholderTextColor={theme.text}/>
+                <TextInput placeholder={t('email')} value={email} onChangeText={setEmail} style={styles.input} placeholderTextColor={theme.text} keyboardType="email-address" autoCapitalize="none"/>
+                {email !== user?.email && (
+                    <TextInput placeholder={t('currentPassword')} value={passwordForEmailChange} onChangeText={setPasswordForEmailChange} style={styles.input} secureTextEntry placeholderTextColor={theme.text}/>
+                )}
                 <View style={styles.modalButtons}>
                     <Button title={t('save')} onPress={handleUpdateProfile} color={theme.primary} />
                     <Button title={t('cancel')} onPress={() => setProfileModalVisible(false)} color="#888" />
@@ -418,6 +467,28 @@ export default function UserDashboard({ navigation }) {
             </View>
         </View>
       </Modal>
+
+      {/* Modal para previsualizar imagen de perfil */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={imagePreviewVisible}
+        onRequestClose={() => setImagePreviewVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.imagePreviewContent}>
+            <Image source={{ uri: user?.photoURL }} style={styles.enlargedProfilePic} />
+            <View style={styles.modalButtons}>
+              <Button title={t('changeProfilePic')} onPress={() => {
+                setImagePreviewVisible(false);
+                selectImage();
+              }} color={theme.primary} />
+              <Button title={t('cancel')} onPress={() => setImagePreviewVisible(false)} color="#888" />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -557,6 +628,20 @@ const getStyles = (theme) => StyleSheet.create({
     padding: 25,
     borderRadius: 20,
     elevation: 10,
+  },
+  imagePreviewContent: {
+    width: '90%',
+    backgroundColor: theme.card,
+    padding: 25,
+    borderRadius: 20,
+    elevation: 10,
+    alignItems: 'center',
+  },
+  enlargedProfilePic: {
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    marginBottom: 20,
   },
   modalTitle: {
     fontSize: 22,

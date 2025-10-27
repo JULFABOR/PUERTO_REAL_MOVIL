@@ -302,74 +302,71 @@ export default function GestionProveedores({ navigation }) {
     p.contactPerson.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
-      <ImageBackground source={BACKGROUND_IMAGE} resizeMode="cover" style={styles.backgroundImage}>
-        <View style={styles.overlay}>
-          {/* Encabezado */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}><Ionicons name="arrow-back" size={28} color={theme.card} /></TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('suppliers.title')}</Text>
-            <TouchableOpacity onPress={handleAdd}><Ionicons name="add" size={32} color={theme.card} /></TouchableOpacity>
-          </View>
-          {/* Búsqueda y controles */}
-          <View style={styles.controlsContainer}>
-            <View style={styles.searchContainer}>
-              <FontAwesome name="search" size={18} color={theme.text} style={styles.searchIcon} />
-              <TextInput style={styles.searchInput} placeholder={t('suppliers.search')} placeholderTextColor={theme.text} value={searchQuery} onChangeText={setSearchQuery} />
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle={theme.isDarkMode ? "light-content" : "dark-content"} />
+        <View style={{flex: 1, backgroundColor: theme.background}}>
+            {/* Encabezado */}
+            <View style={styles.header}>
+              <TouchableOpacity onPress={() => navigation.goBack()}><Ionicons name="arrow-back" size={28} color={theme.primary} /></TouchableOpacity>
+              <Text style={{...styles.headerTitle, color: theme.text}}>{t('suppliers.title')}</Text>
+              <TouchableOpacity onPress={handleAdd}><Ionicons name="add" size={32} color={theme.primary} /></TouchableOpacity>
             </View>
-          </View>
-          {/* Lista de proveedores */}
-          <FlatList 
-            data={filteredProveedores} 
-            renderItem={({item}) => <ProveedorItem item={item} onEdit={handleEdit} onDelete={handleDelete} theme={theme} />} 
-            keyExtractor={item => item.id} 
-            contentContainerStyle={styles.listContainer} 
-          />
-        </View>
-      </ImageBackground>
-
-      {/* Modal para añadir/editar proveedor */}
-      <ProveedorForm 
-        visible={modalVisible} 
-        onClose={() => setModalVisible(false)} 
-        onSave={handleSave} 
-        proveedor={selectedProveedor} 
-        theme={theme} 
-      />
-
-      {/* Modal de confirmación de eliminación */}
-      <Modal visible={isDeleteModalVisible} onRequestClose={() => setIsDeleteModalVisible(false)} transparent={true} animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitleText}>{t('suppliers.confirmDeletion')}</Text>
-              <TouchableOpacity onPress={() => setIsDeleteModalVisible(false)}><FontAwesome name="times-circle" size={30} color={theme.text} /></TouchableOpacity>
+            {/* Búsqueda y controles */}
+            <View style={styles.controlsContainer}>
+              <View style={styles.searchContainer}>
+                <FontAwesome name="search" size={18} color={theme.text} style={styles.searchIcon} />
+                <TextInput style={styles.searchInput} placeholder={t('suppliers.search')} placeholderTextColor={theme.text} value={searchQuery} onChangeText={setSearchQuery} />
+              </View>
             </View>
-            <View style={styles.modalBody}>
-              <View style={styles.deleteIconContainer}><FontAwesome name="exclamation-triangle" size={50} color={theme.primary} /></View>
-              <Text style={styles.deleteQuestion}>{t('suppliers.confirmDeleteMessage')}</Text>
-              {deletingProveedor && <Text style={styles.deleteInfo}>{t('suppliers.supplierWillBeDeleted', {name: deletingProveedor.name})}</Text>}
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setIsDeleteModalVisible(false)}><Text style={[styles.buttonText, {color: theme.text}]}>{t('suppliers.cancel')}</Text></TouchableOpacity>
-                <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={confirmDelete}><Text style={styles.buttonText}>{t('suppliers.delete')}</Text></TouchableOpacity>
+            {/* Lista de proveedores */}
+            <FlatList 
+              data={filteredProveedores} 
+              renderItem={({item}) => <ProveedorItem item={item} onEdit={handleEdit} onDelete={handleDelete} theme={theme} />} 
+              keyExtractor={item => item.id} 
+              contentContainerStyle={styles.listContainer} 
+            />
+          </View>
+  
+        {/* Modal para añadir/editar proveedor */}
+        <ProveedorForm 
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)} 
+          onSave={handleSave} 
+          proveedor={selectedProveedor} 
+          theme={theme} 
+        />
+  
+        {/* Modal de confirmación de eliminación */}
+        <Modal visible={isDeleteModalVisible} onRequestClose={() => setIsDeleteModalVisible(false)} transparent={true} animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitleText}>{t('suppliers.confirmDeletion')}</Text>
+                <TouchableOpacity onPress={() => setIsDeleteModalVisible(false)}><FontAwesome name="times-circle" size={30} color={theme.text} /></TouchableOpacity>
+              </View>
+              <View style={styles.modalBody}>
+                <View style={styles.deleteIconContainer}><FontAwesome name="exclamation-triangle" size={50} color={theme.primary} /></View>
+                <Text style={styles.deleteQuestion}>{t('suppliers.confirmDeleteMessage')}</Text>
+                {deletingProveedor && <Text style={styles.deleteInfo}>{t('suppliers.supplierWillBeDeleted', {name: deletingProveedor.name})}</Text>}
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setIsDeleteModalVisible(false)}><Text style={[styles.buttonText, {color: theme.text}]}>{t('suppliers.cancel')}</Text></TouchableOpacity>
+                  <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={confirmDelete}><Text style={styles.buttonText}>{t('suppliers.delete')}</Text></TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>
-        </View>
-      </Modal>
-
-      {/* Alerta personalizada */}
-      <CustomAlert
-        visible={alertVisible}
-        title={alertTitle}
-        message={alertMessage}
-        onClose={() => setAlertVisible(false)}
-      />
-    </SafeAreaView>
-  );
-}
+        </Modal>
+  
+        {/* Alerta personalizada */}
+        <CustomAlert
+          visible={alertVisible}
+          title={alertTitle}
+          message={alertMessage}
+          onClose={() => setAlertVisible(false)}
+        />
+      </SafeAreaView>
+    );}
 
 /**
  * Componente para renderizar un único elemento de proveedor en la lista.
@@ -381,26 +378,43 @@ export default function GestionProveedores({ navigation }) {
  * @returns {JSX.Element}
  */
 const ProveedorItem = ({ item, onEdit, onDelete, theme }) => {
+  const { t } = useTranslation();
   const styles = getCrudStyles(theme);
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <View style={styles.card}>
-      <View style={{...styles.cardContent, flexDirection: 'row'}}>
-        {item.photoURL ? (
-          <Image source={{ uri: item.photoURL }} style={styles.cardImage} />
-        ) : (
-          <FontAwesome name="user-circle" size={50} color={theme.text} style={{marginRight: 15}} />
+        <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+            <View style={{...styles.cardContent, flexDirection: 'row'}}>
+                {item.photoURL ? (
+                <Image source={{ uri: item.photoURL }} style={styles.cardImage} />
+                ) : (
+                <FontAwesome name="user-circle" size={50} color={theme.text} style={{marginRight: 15}} />
+                )}
+                <View style={{flex: 1}}>
+                    <Text style={styles.cardTitle}>{item.name}</Text>
+                    <Text style={styles.cardInfo}><FontAwesome name="user" /> {item.contactPerson}</Text>
+                </View>
+            </View>
+        </TouchableOpacity>
+        {expanded && (
+            <>
+                <View style={styles.expandedContent}>
+                    <Text style={styles.cardInfo}><FontAwesome name="phone" /> {item.phone}</Text>
+                    <Text style={styles.cardInfo}><FontAwesome name="envelope" /> {item.email}</Text>
+                </View>
+                <View style={styles.cardActions}>
+                    <TouchableOpacity onPress={() => onEdit(item)} style={styles.actionButton}>
+                        <FontAwesome name="pencil" size={20} color={theme.text} />
+                        <Text style={styles.actionButtonText}>{t('suppliers.editSupplier')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => onDelete(item)} style={styles.actionButton}>
+                        <FontAwesome name="trash" size={20} color={theme.primary} />
+                        <Text style={{...styles.actionButtonText, color: theme.primary}}>{t('suppliers.delete')}</Text>
+                    </TouchableOpacity>
+                </View>
+            </>
         )}
-        <View style={{flex: 1}}>
-          <Text style={styles.cardTitle}>{item.name}</Text>
-          <Text style={styles.cardInfo}><FontAwesome name="user" /> {item.contactPerson}</Text>
-          <Text style={styles.cardInfo}><FontAwesome name="phone" /> {item.phone}</Text>
-          <Text style={styles.cardInfo}><FontAwesome name="envelope" /> {item.email}</Text>
-        </View>
-      </View>
-      <View style={styles.cardActions}>
-        <TouchableOpacity onPress={() => onEdit(item)} style={styles.actionButton}><FontAwesome name="pencil" size={20} color={theme.text} /></TouchableOpacity>
-        <TouchableOpacity onPress={() => onDelete(item)} style={styles.actionButton}><FontAwesome name="trash" size={20} color={theme.primary} /></TouchableOpacity>
-      </View>
     </View>
   );
 };

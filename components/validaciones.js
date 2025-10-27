@@ -9,7 +9,7 @@
  * @returns {boolean} - `true` si el valor es válido, `false` en caso contrario.
  */
 export function validarNombreApellido(valor) {
-  const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+  const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ]+( [a-zA-ZáéíóúÁÉÍÓÚñÑ]+)*$/;
   return regex.test(valor);
 }
 
