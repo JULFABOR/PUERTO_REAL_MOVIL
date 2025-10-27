@@ -14,7 +14,7 @@ import { ThemeContext } from '../theme/ThemeContext';
  * Permite al usuario cambiar el tema (claro/oscuro) y el idioma de la aplicación.
  * @returns {JSX.Element}
  */
-const PreferencesScreen = () => {
+const PreferencesScreen = ({ navigation }) => {
   const { isDarkMode, toggleTheme, theme } = useContext(ThemeContext);
   const { t, i18n } = useTranslation();
   const [showLanguageOptions, setShowLanguageOptions] = useState(false);
@@ -32,6 +32,9 @@ const PreferencesScreen = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={theme.text} />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('preferences')}</Text>
       </View>
       
@@ -140,7 +143,15 @@ const getStyles = (theme) => StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: theme.border,
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    top: 20,
+    zIndex: 1,
+},
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',

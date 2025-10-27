@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
  * Muestra una lista de preguntas frecuentes y una opción de contacto.
  * @returns {JSX.Element}
  */
-const HelpScreen = () => {
+const HelpScreen = ({ navigation }) => {
   const { theme } = useContext(ThemeContext);
   const { t } = useTranslation();
   const styles = getStyles(theme);
@@ -54,6 +54,9 @@ const HelpScreen = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={theme.text} />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('help.title')}</Text>
       </View>
 
@@ -97,6 +100,14 @@ const getStyles = (theme) => StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: theme.border,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    top: 20,
+    zIndex: 1,
   },
   headerTitle: {
     fontSize: 24,
