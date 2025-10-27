@@ -15,7 +15,17 @@ export const getCrudStyles = (theme) => StyleSheet.create({
   listContainer: { paddingHorizontal: 20, paddingBottom: 20 },
   
   // Card Styles
-  card: { backgroundColor: theme.card, borderRadius: 15, marginBottom: 15, flexDirection: 'row', alignItems: 'center', padding: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 5, elevation: 5 },
+  card: { 
+    backgroundColor: theme.card, 
+    borderRadius: 15, 
+    marginBottom: 15, 
+    padding: 15, 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 5, 
+    elevation: 5 
+  },
   cardContent: { flex: 1 },
   cardTitle: { fontFamily: 'Roboto-Bold', fontSize: 18, color: theme.text, marginBottom: 5 },
   cardSubtitle: { fontFamily: 'Roboto-Regular', fontSize: 14, color: theme.text, opacity: 0.7, marginBottom: 10, fontStyle: 'italic' },
@@ -23,9 +33,39 @@ export const getCrudStyles = (theme) => StyleSheet.create({
   cardInfo: { fontFamily: 'Roboto-Regular', fontSize: 14, color: theme.text, marginBottom: 4, opacity: 0.8 },
   cardAmount: { fontFamily: 'Roboto-Bold', fontSize: 18, color: theme.primary, marginTop: 8 },
   cardPrice: { fontFamily: 'Roboto-Bold', fontSize: 16, color: theme.primary },
-  cardActions: { flexDirection: 'column', borderLeftWidth: 1, borderLeftColor: theme.border, paddingLeft: 15, marginLeft: 15 },
-  actionButton: { padding: 10 },
+  cardActions: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-around', 
+    borderTopWidth: 1, 
+    borderTopColor: theme.border, 
+    paddingTop: 15, 
+    marginTop: 15 
+  },
+  actionButton: { 
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  actionButtonText: {
+    marginLeft: 10,
+    fontFamily: 'Roboto-Bold',
+    fontSize: 16,
+    color: theme.text
+  },
   cardImage: { width: 50, height: 50, borderRadius: 25, marginRight: 15 },
+
+  expandedContent: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: theme.border,
+  },
+  itemsTitle: {
+    fontFamily: 'Roboto-Bold',
+    fontSize: 16,
+    color: theme.text,
+    marginBottom: 5,
+  },
 
   // Modal Styles
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', alignItems: 'center' },

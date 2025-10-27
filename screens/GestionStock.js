@@ -232,71 +232,68 @@ export default function GestionStock({ navigation }) {
     }
   };
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
-      <ImageBackground source={BACKGROUND_IMAGE} resizeMode="cover" style={styles.backgroundImage}>
-        <View style={styles.overlay}>
-          {/* Encabezado */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={28} color={theme.card} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('stock.title')}</Text>
-            <TouchableOpacity onPress={handleAddProduct} style={styles.addButton}>
-              <Ionicons name="add" size={32} color={theme.card} />
-            </TouchableOpacity>
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle={theme.isDarkMode ? "light-content" : "dark-content"} />
+          <View style={{flex: 1, backgroundColor: theme.background}}>
+            {/* Encabezado */}
+            <View style={styles.header}>
+              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <Ionicons name="arrow-back" size={28} color={theme.primary} />
+              </TouchableOpacity>
+              <Text style={{...styles.headerTitle, color: theme.text}}>{t('stock.title')}</Text>
+              <TouchableOpacity onPress={handleAddProduct} style={styles.addButton}>
+                <Ionicons name="add" size={32} color={theme.primary} />
+              </TouchableOpacity>
+            </View>
+  
+            {/* Lista de productos */}
+            <FlatList
+              data={products}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <ProductItem 
+                  item={item} 
+                  onEdit={() => handleEditProduct(item)}
+                  onDelete={() => handleDeleteProduct(item)}
+                  theme={theme}
+                />
+              )}
+              contentContainerStyle={styles.listContainer}
+            />
+  
+            {/* Formulario de producto (Modal) */}
+            <ProductForm 
+              visible={modalVisible}
+              onClose={() => setModalVisible(false)} 
+              onSave={handleSaveProduct} 
+              product={selectedProduct} 
+              theme={theme} 
+            />
+  
+            {/* Alerta de confirmación de eliminación */}
+            <CustomAlert
+              visible={isDeleteAlertVisible}
+              title={t('stock.delete_modal_title')}
+              message={t('stock.delete_modal_message', { name: productToDelete?.name })}
+              buttons={[
+                { text: t('stock.delete_modal_cancel_button'), style: 'cancel', onPress: () => setIsDeleteAlertVisible(false) },
+                { text: t('stock.delete_modal_confirm_button'), style: 'destructive', onPress: confirmDelete },
+              ]}
+              onClose={() => setIsDeleteAlertVisible(false)}
+            />
+  
+            {/* Alerta para otros mensajes */}
+            <CustomAlert
+              visible={alertVisible}
+              title={alertTitle}
+              message={alertMessage}
+              onClose={() => setAlertVisible(false)}
+            />
+  
           </View>
-
-          {/* Lista de productos */}
-          <FlatList
-            data={products}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <ProductItem 
-                item={item} 
-                onEdit={() => handleEditProduct(item)}
-                onDelete={() => handleDeleteProduct(item)}
-                theme={theme}
-              />
-            )}
-            contentContainerStyle={styles.listContainer}
-          />
-
-          {/* Formulario de producto (Modal) */}
-          <ProductForm 
-            visible={modalVisible} 
-            onClose={() => setModalVisible(false)} 
-            onSave={handleSaveProduct} 
-            product={selectedProduct} 
-            theme={theme} 
-          />
-
-          {/* Alerta de confirmación de eliminación */}
-          <CustomAlert
-            visible={isDeleteAlertVisible}
-            title={t('stock.delete_modal_title')}
-            message={t('stock.delete_modal_message', { name: productToDelete?.name })}
-            buttons={[
-              { text: t('stock.delete_modal_cancel_button'), style: 'cancel', onPress: () => setIsDeleteAlertVisible(false) },
-              { text: t('stock.delete_modal_confirm_button'), style: 'destructive', onPress: confirmDelete },
-            ]}
-            onClose={() => setIsDeleteAlertVisible(false)}
-          />
-
-          {/* Alerta para otros mensajes */}
-          <CustomAlert
-            visible={alertVisible}
-            title={alertTitle}
-            message={alertMessage}
-            onClose={() => setAlertVisible(false)}
-          />
-
-        </View>
-      </ImageBackground>
-    </SafeAreaView>
-  );
-}
+      </SafeAreaView>
+    );}
 
 /**
  * Componente para renderizar un único producto en la lista.
@@ -310,20 +307,32 @@ export default function GestionStock({ navigation }) {
 const ProductItem = ({ item, onEdit, onDelete, theme }) => {
   const { t } = useTranslation();
   const styles = getCrudStyles(theme);
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <View style={styles.card}>
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        <Text style={styles.cardSubtitle}>{item.category}</Text>
-        <View style={styles.cardInfoRow}>
-          <Text style={styles.cardInfo}>{t('stock.stock_label', { stock: item.stock })}</Text>
-          <Text style={styles.cardPrice}>{t('stock.price_label', { price: (item.price || 0).toFixed(2) })}</Text>
+      <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+        <View style={styles.cardContent}>
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.cardSubtitle}>{item.category}</Text>
+            <View style={styles.cardInfoRow}>
+            <Text style={styles.cardInfo}>{t('stock.stock_label', { stock: item.stock })}</Text>
+            <Text style={styles.cardPrice}>{t('stock.price_label', { price: (item.price || 0).toFixed(2) })}</Text>
+            </View>
         </View>
-      </View>
-      <View style={styles.cardActions}>
-        <TouchableOpacity onPress={onEdit} style={styles.actionButton}><FontAwesome name="pencil" size={20} color={theme.text} /></TouchableOpacity>
-        <TouchableOpacity onPress={onDelete} style={styles.actionButton}><FontAwesome name="trash" size={20} color={theme.primary} /></TouchableOpacity>
-      </View>
+      </TouchableOpacity>
+      {expanded && (
+        <View style={styles.cardActions}>
+            <TouchableOpacity onPress={onEdit} style={styles.actionButton}>
+                <FontAwesome name="pencil" size={20} color={theme.text} />
+                <Text style={styles.actionButtonText}>{t('stock.edit_button')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onDelete} style={styles.actionButton}>
+                <FontAwesome name="trash" size={20} color={theme.primary} />
+                <Text style={{...styles.actionButtonText, color: theme.primary}}>{t('stock.delete_button')}</Text>
+            </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };

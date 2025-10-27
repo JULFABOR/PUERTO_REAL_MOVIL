@@ -296,14 +296,13 @@ export default function ControlCompras({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
-      <ImageBackground source={BACKGROUND_IMAGE} resizeMode="cover" style={styles.backgroundImage}>
-        <View style={styles.overlay}>
+      <StatusBar barStyle={theme.isDarkMode ? "light-content" : "dark-content"} />
+      <View style={{flex: 1, backgroundColor: theme.background}}>
           {/* Encabezado */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}><Ionicons name="arrow-back" size={28} color={theme.card} /></TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('purchases.title')}</Text>
-            <TouchableOpacity onPress={handleAdd}><Ionicons name="add" size={32} color={theme.card} /></TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.goBack()}><Ionicons name="arrow-back" size={28} color={theme.primary} /></TouchableOpacity>
+            <Text style={{...styles.headerTitle, color: theme.text}}>{t('purchases.title')}</Text>
+            <TouchableOpacity onPress={handleAdd}><Ionicons name="add" size={32} color={theme.primary} /></TouchableOpacity>
           </View>
           {/* Búsqueda y controles */}
           <View style={styles.controlsContainer}>
@@ -320,7 +319,6 @@ export default function ControlCompras({ navigation }) {
             contentContainerStyle={styles.listContainer} 
           />
         </View>
-      </ImageBackground>
 
       {/* Modal para añadir/editar compra */}
       <PurchaseForm 
@@ -373,19 +371,43 @@ export default function ControlCompras({ navigation }) {
  * @returns {JSX.Element}
  */
 const PurchaseItem = ({ item, onEdit, onDelete, theme }) => {
+  const { t } = useTranslation();
   const styles = getCrudStyles(theme);
+  const [expanded, setExpanded] = useState(false);
   const date = item.fecha?.toDate ? item.fecha.toDate().toLocaleDateString() : 'N/A';
+
   return (
     <View style={styles.card}>
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{item.proveedor}</Text>
-        <Text style={styles.cardInfo}><FontAwesome name="calendar" /> {date}</Text>
-        <Text style={styles.cardAmount}>${(item.importe || 0).toFixed(2)}</Text>
-      </View>
-      <View style={styles.cardActions}>
-        <TouchableOpacity onPress={() => onEdit(item)} style={styles.actionButton}><FontAwesome name="pencil" size={20} color={theme.text} /></TouchableOpacity>
-        <TouchableOpacity onPress={() => onDelete(item)} style={styles.actionButton}><FontAwesome name="trash" size={20} color={theme.primary} /></TouchableOpacity>
-      </View>
+      <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+        <View style={styles.cardContent}>
+            <Text style={styles.cardTitle}>{item.proveedor}</Text>
+            <Text style={styles.cardInfo}><FontAwesome name="calendar" /> {date}</Text>
+            <Text style={styles.cardAmount}>${(item.importe || 0).toFixed(2)}</Text>
+        </View>
+      </TouchableOpacity>
+      {expanded && (
+        <>
+          <View style={styles.expandedContent}>
+            <Text style={styles.itemsTitle}>Items:</Text>
+            {item.items && item.items.map((purchaseItem, index) => (
+                <View key={index} style={styles.itemRow}>
+                <Text style={styles.itemText}>{purchaseItem.name}</Text>
+                <Text style={styles.itemText}>${(purchaseItem.price || 0).toFixed(2)}</Text>
+                </View>
+            ))}
+          </View>
+          <View style={styles.cardActions}>
+            <TouchableOpacity onPress={() => onEdit(item)} style={styles.actionButton}>
+                <FontAwesome name="pencil" size={20} color={theme.text} />
+                <Text style={styles.actionButtonText}>{t('purchases.editPurchase')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => onDelete(item)} style={styles.actionButton}>
+                <FontAwesome name="trash" size={20} color={theme.primary} />
+                <Text style={{...styles.actionButtonText, color: theme.primary}}>{t('purchases.delete')}</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
     </View>
   );
 };
