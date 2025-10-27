@@ -181,11 +181,6 @@ const ProveedorForm = ({ visible, onClose, onSave, proveedor, theme }) => {
             </TouchableOpacity>
         </View>
       </View>
-    </Modal>
-  );
-};
-
-/**
  * Componente principal para la gestión de proveedores.
  * @param {object} props - Propiedades del componente.
  * @param {object} props.navigation - Objeto de navegación.
