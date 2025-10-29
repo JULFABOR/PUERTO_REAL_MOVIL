@@ -125,7 +125,7 @@
     "price": "Price",
     "totalAmount": "Total Amount:",
     "saveChanges": "Save Changes",
-    "search": "Search...",
+    "search": "Search purchase...",
     "add": "Add",
     "purchaseDetail": "Purchase Detail",
     "code": "Code:",
@@ -192,7 +192,7 @@
     "save_button": "Save",
     "cancel_button": "Cancel",
     "delete_modal_title": "Confirm Deletion",
-    "delete_modal_message": "Are you sure you want to delete {{name}}?",
+    "delete_modal_message": "Are you sure you want to delete this stock?",
     "delete_modal_confirm_button": "Delete",
     "delete_modal_cancel_button": "Cancel",
     "no_stock": "There are no products in the inventory.",
@@ -208,7 +208,7 @@
     "negative_values": "Stock and price cannot be negative.",
     "error_save": "Could not save product.",
     "stock_label": "Stock: {{stock}} units",
-    "price_label": "Price: ${{price}}"
+    "price_label": "Price:"
   },
   "help": {
     "title": "Help and Support",

@@ -120,7 +120,8 @@ export default function Analisis({ navigation }) {
     stock: products.filter(p => p.category === category).reduce((sum, p) => sum + p.stock, 0),
     color: `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`,
     legendFontColor: theme.text,
-    legendFontSize: 15
+    legendFontSize: 15,
+    legendFontFamily: 'Roboto-Regular'
   }));
 
   // Datos para el gráfico de líneas de compras del ultimo mes

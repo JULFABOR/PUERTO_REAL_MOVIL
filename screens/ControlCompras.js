@@ -66,11 +66,16 @@ const PurchaseForm = ({ visible, onClose, onSave, purchase, theme }) => {
    */
   const handleAddItem = () => {
     if (itemName && itemPrice) {
-      setItems([...items, { name: itemName, price: parseFloat(itemPrice) }]);
-      setItemName('');
-      setItemPrice('');
+      const price = parseFloat(itemPrice);
+      if (price > 0) {
+        setItems([...items, { name: itemName, price }]);
+        setItemName('');
+        setItemPrice('');
+      } else {
+        onSave({ error: t('purchases.positivePriceRequired') });
+      }
     } else {
-      // Aquí se podría mostrar una alerta o feedback al usuario.
+      onSave({ error: t('purchases.itemNameAndPriceRequired') });
     }
   };
 
@@ -242,6 +247,11 @@ export default function ControlCompras({ navigation }) {
    * @param {object} data - Los datos de la compra a guardar.
    */
   const handleSave = async (data) => {
+    if (data.error) {
+      showAlert(t("error"), data.error);
+      return;
+    }
+
     if (!data.proveedor || data.items.length === 0) {
       showAlert(t("purchases.error"), t("purchases.supplierAndProductsRequired"));
       return;
@@ -340,7 +350,7 @@ export default function ControlCompras({ navigation }) {
             <View style={styles.modalBody}>
               <View style={styles.deleteIconContainer}><FontAwesome name="exclamation-triangle" size={50} color={theme.primary} /></View>
               <Text style={styles.deleteQuestion}>{t('purchases.confirmDeleteMessage')}</Text>
-              {deletingPurchase && <Text style={styles.deleteInfo}>{t('purchases.recordWillBeDeleted', {code: deletingPurchase.id})}</Text>}
+              
               <View style={styles.buttonContainer}>
                 <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setIsDeleteModalVisible(false)}><Text style={[styles.buttonText, {color: theme.text}]}>{t('purchases.cancel')}</Text></TouchableOpacity>
                 <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={confirmDelete}><Text style={styles.buttonText}>{t('purchases.delete')}</Text></TouchableOpacity>

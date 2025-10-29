@@ -128,7 +128,7 @@
     "price": "Precio",
     "totalAmount": "Importe Total:",
     "saveChanges": "Guardar Cambios",
-    "search": "Buscar...",
+    "search": "Buscar compra...",
     "add": "Agregar",
     "purchaseDetail": "Detalle de Compra",
     "code": "Código:",
@@ -173,7 +173,9 @@
     "success": "Éxito",
     "supplierAdded": "Proveedor agregado correctamente.",
     "supplierUpdated": "Proveedor actualizado correctamente.",
-    "supplierDeleted": "Proveedor eliminado correctamente."
+    "supplierDeleted": "Proveedor eliminado correctamente.",
+    "invalidCompanyName": "El nombre de la empresa solo puede contener letras y espacios.",
+    "invalidContactPerson": "El nombre de la persona de contacto solo puede contener letras y espacios."
   },
   "stock": {
     "title": "Gestión de Stock",
@@ -195,7 +197,7 @@
     "save_button": "Guardar",
     "cancel_button": "Cancelar",
     "delete_modal_title": "Confirmar Eliminación",
-    "delete_modal_message": "¿Estás seguro de que quieres eliminar {{name}}?",
+    "delete_modal_message": "¿Estás seguro de que quieres eliminar este stock?",
     "delete_modal_confirm_button": "Eliminar",
     "delete_modal_cancel_button": "Cancelar",
     "no_stock": "No hay productos en el inventario.",
@@ -211,7 +213,7 @@
     "negative_values": "El stock y el precio no pueden ser negativos.",
     "error_save": "No se pudo guardar el producto.",
     "stock_label": "Stock: {{stock}} uds.",
-    "price_label": "Precio: ${{price}}"
+    "price_label": "Precio"
   },
   "help": {
     "title": "Ayuda y Soporte",

@@ -68,7 +68,7 @@ const Input = ({ icon, placeholder, value, onChangeText, secureTextEntry, keyboa
       <TextInput
         style={styles.input}
         placeholder={placeholder}
-        placeholderTextColor="#888"
+        placeholderTextColor="#AAA"
         value={value}
         onChangeText={handleChangeText}
         secureTextEntry={secureTextEntry}
