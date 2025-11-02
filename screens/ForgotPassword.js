@@ -52,6 +52,20 @@ export default function ForgotPassword({ navigation }) {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
+  const [emailError, setEmailError] = useState('');
+
+  /**
+   * Maneja el cambio en el campo de email, validando en tiempo real.
+   * @param {string} text - El texto introducido.
+   */
+  const handleEmailChange = (text) => {
+    setEmail(text);
+    if (text && !validarEmail(text)) {
+      setEmailError(t('invalidEmail'));
+    } else {
+      setEmailError('');
+    }
+  };
 
   /**
    * Hook de efecto que se ejecuta cuando la pantalla obtiene el foco.
@@ -131,10 +145,11 @@ export default function ForgotPassword({ navigation }) {
                   icon="envelope"
                   placeholder={t('email')}
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={handleEmailChange}
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
+                {emailError ? <Text style={styles.guideText}>{emailError}</Text> : null}
 
                 <TouchableOpacity style={styles.resetButton} onPress={handlePasswordReset} disabled={loading}>
                   {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.resetButtonText}>{t('resetPassword')}</Text>}
@@ -224,6 +239,14 @@ const styles = StyleSheet.create({
   backText: {
     color: '#fff',
     fontSize: 16,
+    fontFamily: 'Roboto-Regular',
+  },
+  guideText: {
+    color: '#888',
+    width: '100%',
+    textAlign: 'left',
+    marginTop: -15,
+    marginBottom: 10,
     fontFamily: 'Roboto-Regular',
   },
 });

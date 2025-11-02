@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { ThemeProvider } from './theme/ThemeContext';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './src/i18n/i18n';
+import { AuthProvider } from './context/AuthContext';
 
 // Mantener la pantalla de carga visible mientras se cargan las fuentes
 SplashScreen.preventAutoHideAsync();
@@ -41,7 +42,9 @@ export default function App() {
   return (
     <I18nextProvider i18n={i18n}>
       <ThemeProvider>
-        <Navigation />
+        <AuthProvider>
+          <Navigation />
+        </AuthProvider>
       </ThemeProvider>
     </I18nextProvider>
   );

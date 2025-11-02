@@ -52,6 +52,8 @@
   "connectionError": "Connection error, please try again later.",
   "loginError": "Login Error",
   "register": "Sign Up",
+  "nameTooLong": "Name cannot be longer than {{maxLength}} characters.",
+  "surnameTooLong": "Surname cannot be longer than {{maxLength}} characters.",
   "welcomeTo": "Welcome to",
   "email": "Email",
   "password": "Password",

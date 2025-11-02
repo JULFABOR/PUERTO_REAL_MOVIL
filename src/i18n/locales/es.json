@@ -55,6 +55,8 @@
   "connectionError": "Error de conexión, por favor intenta más tarde.",
   "loginError": "Error de inicio de sesión",
   "register": "Registrarse",
+  "nameTooLong": "El nombre no puede tener más de {{maxLength}} caracteres.",
+  "surnameTooLong": "El apellido no puede tener más de {{maxLength}} caracteres.",
   "welcomeTo": "¡Bienvenido a",
   "email": "Correo Electrónico",
   "password": "Contraseña",

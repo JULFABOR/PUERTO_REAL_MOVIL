@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { StatusBar } from 'react-native';
+import { StatusBar, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import { auth } from '../src/config/firebaseConfig';
+import { useAuth } from '../context/AuthContext';
 import { ThemeContext } from '../theme/ThemeContext';
 
 import Welcome from '../screens/Welcome';
@@ -41,6 +42,7 @@ function Navigation() {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
   const { theme, isDarkMode } = useContext(ThemeContext);
+  const { isAuthInProgress } = useAuth();
 
   const navigationTheme = {
     ...(isDarkMode ? DarkTheme : DefaultTheme),
@@ -64,7 +66,13 @@ function Navigation() {
     return subscriber; 
   }, []);
 
-  if (initializing) return null;
+  if (initializing || isAuthInProgress) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#d96c3d" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer theme={navigationTheme}>
@@ -89,5 +97,14 @@ function Navigation() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#3A3A3A',
+  },
+});
 
 export default Navigation;

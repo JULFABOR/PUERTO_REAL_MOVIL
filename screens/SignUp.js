@@ -25,6 +25,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import CustomAlert from '../components/CustomAlert';
 import Input from '../components/Input';
 import { validarNombreApellido, validarEmail } from '../components/validaciones';
+import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
 // --- Colores y Estilos Reutilizados ---
@@ -59,6 +60,7 @@ const PasswordRequirement = ({ met, text }) => (
  */
 export default function SignUp({ navigation }) {
   const { t } = useTranslation();
+  const { setAuthInProgress } = useAuth();
   // Estados para los campos del formulario
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
@@ -92,7 +94,9 @@ export default function SignUp({ navigation }) {
    */
   const handleNombreChange = (text) => {
     setNombre(text);
-    if (text && !validarNombreApellido(text)) {
+    if (text.length > 25) {
+      setNombreError(t('nameTooLong', { maxLength: 25 }));
+    } else if (text && !validarNombreApellido(text)) {
       setNombreError(t('nameOnlyLetters'));
     } else {
       setNombreError('');
@@ -105,7 +109,9 @@ export default function SignUp({ navigation }) {
    */
   const handleApellidoChange = (text) => {
     setApellido(text);
-    if (text && !validarNombreApellido(text)) {
+    if (text.length > 25) {
+      setApellidoError(t('surnameTooLong', { maxLength: 25 }));
+    } else if (text && !validarNombreApellido(text)) {
       setApellidoError(t('surnameOnlyLetters'));
     } else {
       setApellidoError('');
@@ -181,6 +187,7 @@ export default function SignUp({ navigation }) {
     }
 
     setLoading(true);
+    setAuthInProgress(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -188,9 +195,17 @@ export default function SignUp({ navigation }) {
       await updateProfile(user, {
         displayName: `${nombre.trim()} ${apellido.trim()}`
       });
+
+      await auth.signOut(); // <-- Sign out the user
       
-      showAlert(t('signupSuccess'), t('signupSuccessMessage'));
-      navigation.navigate('Login');
+      // Use setTimeout to push the navigation to the next event loop cycle
+      setTimeout(() => {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login', params: { registrationSuccess: true } }],
+        });
+      }, 0);
+
     } catch (error) {
       let errorMessage = t('signupProblem');
       if (error.code === 'auth/email-already-in-use') {
@@ -199,8 +214,10 @@ export default function SignUp({ navigation }) {
         errorMessage = t('invalidEmail');
       }
       showAlert(t('signupError'), errorMessage);
+    } finally {
+      setLoading(false);
+      setAuthInProgress(false);
     }
-    setLoading(false);
   };
 
   return (
