@@ -17,6 +17,7 @@ import {
   ScrollView,
   ImageBackground,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { db } from '../src/config/firebaseConfig';
@@ -45,6 +46,9 @@ const PurchaseForm = ({ visible, onClose, onSave, purchase, theme }) => {
   const [items, setItems] = useState([]);
   const [itemName, setItemName] = useState('');
   const [itemPrice, setItemPrice] = useState('');
+  const [suppliers, setSuppliers] = useState([]);
+  const [loadingSuppliers, setLoadingSuppliers] = useState(true);
+  const [showSuppliersList, setShowSuppliersList] = useState(false);
 
   const totalImporte = items.reduce((sum, item) => sum + parseFloat(item.price || 0), 0);
 
@@ -62,15 +66,37 @@ const PurchaseForm = ({ visible, onClose, onSave, purchase, theme }) => {
   }, [purchase]);
 
   /**
+   * Carga la lista de proveedores desde Firestore y la mantiene en tiempo real.
+   */
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "proveedores"), (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setSuppliers(data);
+      setLoadingSuppliers(false);
+    }, (error) => {
+      // En caso de error, indicamos que la carga terminó y notificamos al formulario
+      setLoadingSuppliers(false);
+      console.error('Error loading suppliers:', error);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  /**
    * Añade un nuevo item a la lista de productos de la compra.
    */
   const handleAddItem = () => {
     if (itemName && itemPrice) {
-      setItems([...items, { name: itemName, price: parseFloat(itemPrice) }]);
-      setItemName('');
-      setItemPrice('');
+      const price = parseFloat(itemPrice);
+      if (price > 0) {
+        setItems([...items, { name: itemName, price }]);
+        setItemName('');
+        setItemPrice('');
+      } else {
+        onSave({ error: t('purchases.positivePriceRequired') });
+      }
     } else {
-      // Aquí se podría mostrar una alerta o feedback al usuario.
+      onSave({ error: t('purchases.itemNameAndPriceRequired') });
     }
   };
 
@@ -104,7 +130,51 @@ const PurchaseForm = ({ visible, onClose, onSave, purchase, theme }) => {
             </View>
             <ScrollView>
                 <Text style={styles.formLabel}>{t('purchases.supplier')}</Text>
-                <TextInput style={styles.formInput} placeholder={t('purchases.selectSupplier')} value={proveedor} onChangeText={setProveedor} placeholderTextColor={theme.text} />
+                {/* Selector de proveedores: botón con flecha que despliega lista vertical */}
+                {loadingSuppliers ? (
+                  <View style={{height: 50, justifyContent: 'center'}}>
+                    <ActivityIndicator size="small" color={theme.primary} />
+                  </View>
+                ) : (
+                  <View>
+                    <TouchableOpacity
+                      onPress={() => setShowSuppliersList(!showSuppliersList)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: 12,
+                        borderRadius: 8,
+                        backgroundColor: theme.background,
+                        borderWidth: 1,
+                        borderColor: theme.border,
+                      }}
+                    >
+                      <Text style={{ color: theme.text }}>{proveedor || t('purchases.selectSupplier')}</Text>
+                      <FontAwesome name={showSuppliersList ? 'chevron-up' : 'chevron-down'} size={18} color={theme.text} />
+                    </TouchableOpacity>
+
+                    {showSuppliersList && (
+                      <View style={{ maxHeight: 220, marginTop: 8, borderRadius: 8, overflow: 'hidden', borderWidth: 1, borderColor: theme.border, backgroundColor: theme.card }}>
+                        {suppliers.length === 0 ? (
+                          <View style={{ padding: 12 }}><Text style={{ color: theme.text }}>{t('purchases.selectSupplier')}</Text></View>
+                        ) : (
+                          <ScrollView nestedScrollEnabled={true} style={{ maxHeight: 220 }}>
+                            {suppliers.map((item, idx) => (
+                              <TouchableOpacity
+                                key={item.id}
+                                onPress={() => { setProveedor(item.name); setShowSuppliersList(false); }}
+                                style={{ paddingVertical: 12, paddingHorizontal: 14, borderBottomWidth: idx === suppliers.length - 1 ? 0 : 1, borderBottomColor: theme.border }}
+                              >
+                                <Text style={{ color: theme.text }}>{item.name}</Text>
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        )}
+                      </View>
+                    )}
+                  </View>
+                )}
 
                 <Text style={styles.formLabel}>{t('purchases.products')}</Text>
                 <View style={styles.formSection}>
@@ -203,6 +273,24 @@ export default function ControlCompras({ navigation }) {
   };
 
   /**
+   * Manejo seguro del botón 'volver'. Comprueba si la navegación puede hacer 'goBack',
+   * y si no, redirige a la pantalla 'Main' (navegador principal / tab navigator).
+   */
+  const handleGoBack = () => {
+    try {
+      if (navigation && typeof navigation.canGoBack === 'function' && navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        // 'Main' es el nombre del screen que carga el TabNavigator en AppNavigator
+        navigation.navigate('Main');
+      }
+    } catch (err) {
+      // En caso de cualquier error, navegamos a Main como fallback
+      navigation.navigate('Main');
+    }
+  };
+
+  /**
    * Maneja la apertura del modal para editar una compra existente.
    * @param {object} purchase - La compra a editar.
    */
@@ -242,8 +330,17 @@ export default function ControlCompras({ navigation }) {
    * @param {object} data - Los datos de la compra a guardar.
    */
   const handleSave = async (data) => {
+    if (data.error) {
+      showAlert(t("error"), data.error);
+      return;
+    }
+
     if (!data.proveedor || data.items.length === 0) {
-      showAlert(t("purchases.error"), t("purchases.supplierAndProductsRequired"));
+      // Use defaultValue to avoid missing-key runtime issues if a locale doesn't include the key.
+      showAlert(
+        t("purchases.error"),
+        t("purchases.supplierAndProductsRequired", { defaultValue: "Supplier and products are required." })
+      );
       return;
     }
 
@@ -300,7 +397,7 @@ export default function ControlCompras({ navigation }) {
       <View style={{flex: 1, backgroundColor: theme.background}}>
           {/* Encabezado */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}><Ionicons name="arrow-back" size={28} color={theme.primary} /></TouchableOpacity>
+            <TouchableOpacity onPress={handleGoBack}><Ionicons name="arrow-back" size={28} color={theme.primary} /></TouchableOpacity>
             <Text style={{...styles.headerTitle, color: theme.text}}>{t('purchases.title')}</Text>
             <TouchableOpacity onPress={handleAdd}><Ionicons name="add" size={32} color={theme.primary} /></TouchableOpacity>
           </View>
@@ -340,7 +437,7 @@ export default function ControlCompras({ navigation }) {
             <View style={styles.modalBody}>
               <View style={styles.deleteIconContainer}><FontAwesome name="exclamation-triangle" size={50} color={theme.primary} /></View>
               <Text style={styles.deleteQuestion}>{t('purchases.confirmDeleteMessage')}</Text>
-              {deletingPurchase && <Text style={styles.deleteInfo}>{t('purchases.recordWillBeDeleted', {code: deletingPurchase.id})}</Text>}
+              
               <View style={styles.buttonContainer}>
                 <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setIsDeleteModalVisible(false)}><Text style={[styles.buttonText, {color: theme.text}]}>{t('purchases.cancel')}</Text></TouchableOpacity>
                 <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={confirmDelete}><Text style={styles.buttonText}>{t('purchases.delete')}</Text></TouchableOpacity>

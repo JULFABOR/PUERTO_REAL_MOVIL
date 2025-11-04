@@ -25,6 +25,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import CustomAlert from '../components/CustomAlert';
 import Input from '../components/Input';
 import { validarNombreApellido, validarEmail } from '../components/validaciones';
+import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
 // --- Colores y Estilos Reutilizados ---
@@ -59,6 +60,7 @@ const PasswordRequirement = ({ met, text }) => (
  */
 export default function SignUp({ navigation }) {
   const { t } = useTranslation();
+  const { setAuthInProgress } = useAuth();
   // Estados para los campos del formulario
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
@@ -67,7 +69,7 @@ export default function SignUp({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPasswords, setShowPasswords] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   // Estados para las alertas
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
@@ -80,6 +82,54 @@ export default function SignUp({ navigation }) {
   const [hasNumber, setHasNumber] = useState(false);
   const [hasSpecialChar, setHasSpecialChar] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(true);
+
+  // Estados para los errores de los campos
+  const [nombreError, setNombreError] = useState('');
+  const [apellidoError, setApellidoError] = useState('');
+  const [emailError, setEmailError] = useState('');
+
+  /**
+   * Maneja el cambio en el campo de nombre, validando en tiempo real.
+   * @param {string} text - El texto introducido.
+   */
+  const handleNombreChange = (text) => {
+    setNombre(text);
+    if (text.length > 25) {
+      setNombreError(t('nameTooLong', { maxLength: 25 }));
+    } else if (text && !validarNombreApellido(text)) {
+      setNombreError(t('nameOnlyLetters'));
+    } else {
+      setNombreError('');
+    }
+  };
+
+  /**
+   * Maneja el cambio en el campo de apellido, validando en tiempo real.
+   * @param {string} text - El texto introducido.
+   */
+  const handleApellidoChange = (text) => {
+    setApellido(text);
+    if (text.length > 25) {
+      setApellidoError(t('surnameTooLong', { maxLength: 25 }));
+    } else if (text && !validarNombreApellido(text)) {
+      setApellidoError(t('surnameOnlyLetters'));
+    } else {
+      setApellidoError('');
+    }
+  };
+
+  /**
+   * Maneja el cambio en el campo de email, validando en tiempo real.
+   * @param {string} text - El texto introducido.
+   */
+  const handleEmailChange = (text) => {
+    setEmail(text);
+    if (text && !validarEmail(text)) {
+      setEmailError(t('invalidEmail'));
+    } else {
+      setEmailError('');
+    }
+  };
 
   /**
    * Efecto para validar la contraseña cada vez que cambia.
@@ -119,31 +169,25 @@ export default function SignUp({ navigation }) {
   const handleSignUp = async () => {
     // Validaciones de los campos
     if (!nombre || !apellido || !email || !password || !confirmPassword) {
-      showAlert(t("signupError"), t("allFieldsRequired"));
+      showAlert(t('signupError'), t('allFieldsRequired'));
       return;
     }
-    if (!validarNombreApellido(nombre)) {
-      showAlert(t("signupError"), t("nameOnlyLetters"));
-      return;
-    }
-    if (!validarNombreApellido(apellido)) {
-      showAlert(t("signupError"), t("surnameOnlyLetters"));
-      return;
-    }
-    if (!validarEmail(email)) {
-      showAlert(t("signupError"), t("invalidEmail"));
+    // Verifica si hay errores de validación en los campos
+    if (nombreError || apellidoError || emailError) {
+      showAlert(t('signupError'), t('checkFields'));
       return;
     }
     if (!passwordsMatch) {
-      showAlert(t("signupError"), t("passwordsDoNotMatch"));
+      showAlert(t('signupError'), t('passwordsDoNotMatch'));
       return;
     }
     if (!allRequirementsMet) {
-      showAlert(t("signupError"), t("passwordRequirements"));
+      showAlert(t('signupError'), t('passwordRequirements'));
       return;
     }
 
     setLoading(true);
+    setAuthInProgress(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -151,19 +195,29 @@ export default function SignUp({ navigation }) {
       await updateProfile(user, {
         displayName: `${nombre.trim()} ${apellido.trim()}`
       });
+
+      await auth.signOut(); // <-- Sign out the user
       
-      showAlert(t("signupSuccess"), t("signupSuccessMessage"));
-      navigation.navigate('Login');
+      // Use setTimeout to push the navigation to the next event loop cycle
+      setTimeout(() => {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login', params: { registrationSuccess: true } }],
+        });
+      }, 0);
+
     } catch (error) {
-      let errorMessage = t("signupProblem");
+      let errorMessage = t('signupProblem');
       if (error.code === 'auth/email-already-in-use') {
-        errorMessage = t("emailInUse");
+        errorMessage = t('emailInUse');
       } else if (error.code === 'auth/invalid-email') {
-        errorMessage = t("invalidEmail");
+        errorMessage = t('invalidEmail');
       }
-      showAlert(t("signupError"), errorMessage);
+      showAlert(t('signupError'), errorMessage);
+    } finally {
+      setLoading(false);
+      setAuthInProgress(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -191,10 +245,14 @@ export default function SignUp({ navigation }) {
                 <Text style={styles.welcomeText}>{t('createAccount')}</Text>
 
                 {/* Campos del formulario */}
-                <Input icon="user" placeholder={t('name')} value={nombre} onChangeText={setNombre} />
-                <Input icon="user" placeholder={t('surname')} value={apellido} onChangeText={setApellido} />
-                <Input icon="envelope" placeholder={t('email')} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+                <Input icon="user" placeholder={t('name')} value={nombre} onChangeText={handleNombreChange} />
+                {nombreError ? <Text style={styles.passwordMismatchError}>{nombreError}</Text> : null}
                 
+                <Input icon="user" placeholder={t('surname')} value={apellido} onChangeText={handleApellidoChange} />
+                {apellidoError ? <Text style={styles.passwordMismatchError}>{apellidoError}</Text> : null}
+
+                <Input icon="envelope" placeholder={t('email')} value={email} onChangeText={handleEmailChange} keyboardType="email-address" autoCapitalize="none" />
+                {emailError ? <Text style={styles.guideText}>{emailError} </Text> : null}
                 {/* Contenedor de contraseña con opción de mostrar/ocultar */}
                 <View style={styles.passwordContainer}>
                   <Input placeholder={t('password')} value={password} onChangeText={setPassword} secureTextEntry={!showPasswords} />
@@ -317,6 +375,14 @@ const styles = StyleSheet.create({
   },
   passwordMismatchError: {
     color: '#C62828',
+    width: '100%',
+    textAlign: 'left',
+    marginTop: -15,
+    marginBottom: 10,
+    fontFamily: 'Roboto-Regular',
+  },
+  guideText: {
+    color: '#888',
     width: '100%',
     textAlign: 'left',
     marginTop: -15,

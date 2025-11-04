@@ -181,6 +181,11 @@ const ProveedorForm = ({ visible, onClose, onSave, proveedor, theme }) => {
             </TouchableOpacity>
         </View>
       </View>
+    </Modal>
+  );
+};
+
+/**
  * Componente principal para la gestión de proveedores.
  * @param {object} props - Propiedades del componente.
  * @param {object} props.navigation - Objeto de navegación.
@@ -271,8 +276,32 @@ export default function GestionProveedores({ navigation }) {
    * @param {object} data - Los datos del proveedor a guardar.
    */
   const handleSave = async (data) => {
-    if (!data.name || !data.contactPerson || !data.phone || !data.email) {
+    const { name, contactPerson, phone, email } = data;
+    if (!name || !contactPerson || !phone || !email) {
       showAlert(t("suppliers.error"), t("suppliers.allFieldsRequired"));
+      return;
+    }
+
+    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+    if (!nameRegex.test(name)) {
+        showAlert(t("suppliers.error"), t("suppliers.invalidCompanyName"));
+        return;
+    }
+
+    if (!nameRegex.test(contactPerson)) {
+        showAlert(t("suppliers.error"), t("suppliers.invalidContactPerson"));
+        return;
+    }
+
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    if (!emailRegex.test(email)) {
+      showAlert(t("suppliers.error"), t("suppliers.invalidEmail"));
+      return;
+    }
+
+    const phoneRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/;
+    if (!phoneRegex.test(phone)) {
+      showAlert(t("suppliers.error"), t("suppliers.invalidPhone"));
       return;
     }
 
@@ -348,7 +377,7 @@ export default function GestionProveedores({ navigation }) {
               <View style={styles.modalBody}>
                 <View style={styles.deleteIconContainer}><FontAwesome name="exclamation-triangle" size={50} color={theme.primary} /></View>
                 <Text style={styles.deleteQuestion}>{t('suppliers.confirmDeleteMessage')}</Text>
-                {deletingProveedor && <Text style={styles.deleteInfo}>{t('suppliers.supplierWillBeDeleted', {name: deletingProveedor.name})}</Text>}
+                
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setIsDeleteModalVisible(false)}><Text style={[styles.buttonText, {color: theme.text}]}>{t('suppliers.cancel')}</Text></TouchableOpacity>
                   <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={confirmDelete}><Text style={styles.buttonText}>{t('suppliers.delete')}</Text></TouchableOpacity>

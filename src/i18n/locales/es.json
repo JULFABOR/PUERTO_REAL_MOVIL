@@ -55,6 +55,8 @@
   "connectionError": "Error de conexión, por favor intenta más tarde.",
   "loginError": "Error de inicio de sesión",
   "register": "Registrarse",
+  "nameTooLong": "El nombre no puede tener más de {{maxLength}} caracteres.",
+  "surnameTooLong": "El apellido no puede tener más de {{maxLength}} caracteres.",
   "welcomeTo": "¡Bienvenido a",
   "email": "Correo Electrónico",
   "password": "Contraseña",
@@ -68,9 +70,11 @@
   "signupSuccessMessage": "Tu cuenta ha sido creada. Por favor, inicia sesión.",
   "signupProblem": "Hubo un problema al registrar el usuario.",
   "emailInUse": "El correo electrónico ya está en uso.",
-  "invalidEmail": "El formato del correo electrónico no es válido.",
+  "invalidEmail": "Formato de correo válido: Ej. ejemplo@correo.com",
   "signupError": "Error de Registro",
+  "checkFields": "Por favor, revisa los campos con errores.",
   "createAccount": "Crea tu cuenta",
+  "emailFormatGuide": "Ej. Formato de correo válido: ejemplo@correo.com",
   "validFormat": "Formato válido.",
   "passwordMustContain": "La contraseña debe contener:",
   "atLeast8Chars": "Al menos 8 caracteres",
@@ -81,11 +85,11 @@
   "confirmPassword": "Confirmar Contraseña",
   "pleaseEnterEmail": "Por favor ingrese su correo electrónico.",
   "emailSent": "Correo Enviado",
-  "passwordResetEmailSent": "Se ha enviado un correo para restablecer la contraseña. Revise la bandeja de entrada y spam.",
+  "passwordResetEmailSent": "Se ha enviado un correo para restablecer su contraseña. Revisa tu bandeja de entrada y spam.",
   "problemSendingEmail": "Hubo un problema al enviar el correo.",
   "userNotFound": "No se encontró un usuario con este correo.",
   "recoverPassword": "Recuperar Contraseña",
-  "recoverPasswordInfo": "Ingresa su correo electrónico y le enviaremos un enlace para restablecer la contraseña.",
+  "recoverPasswordInfo": "Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.",
   "resetPassword": "Restablecer Contraseña",
   "goBack": "Volver",
   "inventoryAnalysis": "Análisis de Inventario",
@@ -128,7 +132,7 @@
     "price": "Precio",
     "totalAmount": "Importe Total:",
     "saveChanges": "Guardar Cambios",
-    "search": "Buscar...",
+    "search": "Buscar compra...",
     "add": "Agregar",
     "purchaseDetail": "Detalle de Compra",
     "code": "Código:",
@@ -145,7 +149,9 @@
     "info": "Info",
     "notImplemented": "Funcionalidad no implementada.",
     "supplierAndProductsRequired": "Proveedor y productos son obligatorios.",
+    "purchases.itemNameAndPriceRequired": "Nombre y Precio requeridos.",
     "success": "Éxito",
+    "purchaseAdded": "Compra agregada correctamente.",
     "purchaseDeleted": "Compra eliminada correctamente."
   },
   "suppliers": {
@@ -173,7 +179,9 @@
     "success": "Éxito",
     "supplierAdded": "Proveedor agregado correctamente.",
     "supplierUpdated": "Proveedor actualizado correctamente.",
-    "supplierDeleted": "Proveedor eliminado correctamente."
+    "supplierDeleted": "Proveedor eliminado correctamente.",
+    "invalidCompanyName": "El nombre de la empresa solo puede contener letras y espacios.",
+    "invalidContactPerson": "El nombre de la persona de contacto solo puede contener letras y espacios."
   },
   "stock": {
     "title": "Gestión de Stock",
@@ -195,7 +203,7 @@
     "save_button": "Guardar",
     "cancel_button": "Cancelar",
     "delete_modal_title": "Confirmar Eliminación",
-    "delete_modal_message": "¿Estás seguro de que quieres eliminar {{name}}?",
+    "delete_modal_message": "¿Estás seguro de que quieres eliminar este stock?",
     "delete_modal_confirm_button": "Eliminar",
     "delete_modal_cancel_button": "Cancelar",
     "no_stock": "No hay productos en el inventario.",
@@ -211,7 +219,7 @@
     "negative_values": "El stock y el precio no pueden ser negativos.",
     "error_save": "No se pudo guardar el producto.",
     "stock_label": "Stock: {{stock}} uds.",
-    "price_label": "Precio: ${{price}}"
+    "price_label": "Precio"
   },
   "help": {
     "title": "Ayuda y Soporte",

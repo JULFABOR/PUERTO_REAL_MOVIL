@@ -3,7 +3,7 @@
  * @description Pantalla de inicio de sesión de usuario.
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -45,9 +45,10 @@ const BACKGROUND_IMAGE = require('../assets/vine-9039366.jpg');
  * Componente principal de la pantalla de Login.
  * @param {object} props - Propiedades del componente.
  * @param {object} props.navigation - Objeto de navegación de React Navigation.
+ * @param {object} props.route - Objeto de la ruta con los parámetros.
  * @returns {JSX.Element}
  */
-export default function Login({ navigation }) {
+export default function Login({ navigation, route }) {
   const { t } = useTranslation();
   // Estados del componente
   const [email, setEmail] = useState('');
@@ -58,11 +59,36 @@ export default function Login({ navigation }) {
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   const [buttonTextVisible, setButtonTextVisible] = useState(true);
+  const [emailError, setEmailError] = useState('');
+
+  /**
+   * Maneja el cambio en el campo de email, validando en tiempo real.
+   * @param {string} text - El texto introducido.
+   */
+  const handleEmailChange = (text) => {
+    setEmail(text);
+    if (text && !validarEmail(text)) {
+      setEmailError(t('invalidEmail'));
+    } else {
+      setEmailError('');
+    }
+  };
 
   // Referencia para la animación del círculo de transición
   const circleAnim = useRef(new Animated.Value(0)).current;
   const { width, height } = Dimensions.get('window');
   const maxDiameter = Math.sqrt(width * width + height * height) * 2;
+
+  /**
+   * Efecto para mostrar la alerta de registro exitoso.
+   */
+  useEffect(() => {
+    if (route.params?.registrationSuccess) {
+      showAlert(t('signupSuccess'), t('signupSuccessMessage'));
+      // Limpia el parámetro para que la alerta no se muestre de nuevo
+      navigation.setParams({ registrationSuccess: undefined });
+    }
+  }, [route.params?.registrationSuccess]);
 
   /**
    * Muestra una alerta personalizada.
@@ -181,10 +207,11 @@ export default function Login({ navigation }) {
                   icon="envelope"
                   placeholder={t('email')}
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={handleEmailChange}
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
+                {emailError ? <Text style={styles.guideText}>{emailError}</Text> : null}
                 <View style={styles.passwordContainer}>
                   <Input
                     placeholder={t('password')}
@@ -333,5 +360,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontFamily: 'Roboto-Bold',
+  },
+  guideText: {
+    color: '#888',
+    width: '100%',
+    textAlign: 'left',
+    marginTop: -15,
+    marginBottom: 10,
+    fontFamily: 'Roboto-Regular',
   },
 });

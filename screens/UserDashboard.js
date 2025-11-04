@@ -406,6 +406,7 @@ export default function UserDashboard({ navigation }) {
         title={t("logout")}
         message={t("logoutConfirmation")}
         onClose={() => setLogoutAlertVisible(false)}
+        showIcon={false}
         buttons={[
             {
                 text: t("cancel"),

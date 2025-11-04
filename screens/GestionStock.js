@@ -119,11 +119,12 @@ export default function GestionStock({ navigation }) {
   const [products, setProducts] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isDeleteAlertVisible, setIsDeleteAlertVisible] = useState(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   /**
    * Efecto para obtener los productos de Firestore en tiempo real.
@@ -159,7 +160,7 @@ export default function GestionStock({ navigation }) {
    */
   const handleDeleteProduct = (item) => {
     setProductToDelete(item);
-    setIsDeleteAlertVisible(true);
+    setIsDeleteModalVisible(true);
   };
 
   /**
@@ -169,7 +170,7 @@ export default function GestionStock({ navigation }) {
     if (productToDelete) {
       try {
         await deleteDoc(doc(db, "products", productToDelete.id));
-        setIsDeleteAlertVisible(false);
+        setIsDeleteModalVisible(false);
         setProductToDelete(null);
       } catch (error) {
         setAlertTitle(t('error'));
@@ -232,6 +233,11 @@ export default function GestionStock({ navigation }) {
     }
   };
 
+  const filteredProducts = products.filter(p =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
     return (
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle={theme.isDarkMode ? "light-content" : "dark-content"} />
@@ -246,10 +252,18 @@ export default function GestionStock({ navigation }) {
                 <Ionicons name="add" size={32} color={theme.primary} />
               </TouchableOpacity>
             </View>
+
+            {/* Búsqueda y controles */}
+            <View style={styles.controlsContainer}>
+              <View style={styles.searchContainer}>
+                <FontAwesome name="search" size={18} color={theme.text} style={styles.searchIcon} />
+                <TextInput style={styles.searchInput} placeholder={t('stock.searchPlaceholder')} placeholderTextColor={theme.text} value={searchQuery} onChangeText={setSearchQuery} />
+              </View>
+            </View>
   
             {/* Lista de productos */}
             <FlatList
-              data={products}
+              data={filteredProducts}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
                 <ProductItem 
@@ -271,17 +285,25 @@ export default function GestionStock({ navigation }) {
               theme={theme} 
             />
   
-            {/* Alerta de confirmación de eliminación */}
-            <CustomAlert
-              visible={isDeleteAlertVisible}
-              title={t('stock.delete_modal_title')}
-              message={t('stock.delete_modal_message', { name: productToDelete?.name })}
-              buttons={[
-                { text: t('stock.delete_modal_cancel_button'), style: 'cancel', onPress: () => setIsDeleteAlertVisible(false) },
-                { text: t('stock.delete_modal_confirm_button'), style: 'destructive', onPress: confirmDelete },
-              ]}
-              onClose={() => setIsDeleteAlertVisible(false)}
-            />
+            {/* Modal de confirmación de eliminación */}
+            <Modal visible={isDeleteModalVisible} onRequestClose={() => setIsDeleteModalVisible(false)} transparent={true} animationType="fade">
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContainer}>
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitleText}>{t('stock.delete_modal_title')}</Text>
+                    <TouchableOpacity onPress={() => setIsDeleteModalVisible(false)}><FontAwesome name="times-circle" size={30} color={theme.text} /></TouchableOpacity>
+                  </View>
+                  <View style={styles.modalBody}>
+                    <View style={styles.deleteIconContainer}><FontAwesome name="exclamation-triangle" size={50} color={theme.primary} /></View>
+                    <Text style={styles.deleteQuestion}>{t('stock.delete_modal_message')}</Text>
+                    <View style={styles.buttonContainer}>
+                      <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setIsDeleteModalVisible(false)}><Text style={[styles.buttonText, {color: theme.text}]}>{t('stock.delete_modal_cancel_button')}</Text></TouchableOpacity>
+                      <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={confirmDelete}><Text style={styles.buttonText}>{t('stock.delete_modal_confirm_button')}</Text></TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </Modal>
   
             {/* Alerta para otros mensajes */}
             <CustomAlert
