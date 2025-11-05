@@ -57,6 +57,7 @@ export default function UserDashboard({ navigation }) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   // Estados para la edición del perfil
   const [nombre, setNombre] = useState('');
@@ -459,8 +460,32 @@ export default function UserDashboard({ navigation }) {
             <View style={styles.modalContent}>
                 <Text style={styles.modalTitle}>{t('changePasswordTitle')}</Text>
                 <TextInput placeholder={t('currentPassword')} value={currentPassword} onChangeText={setCurrentPassword} style={styles.input} secureTextEntry placeholderTextColor={theme.text} />
-                <TextInput placeholder={t('newPassword')} value={newPassword} onChangeText={setNewPassword} style={styles.input} secureTextEntry placeholderTextColor={theme.text}/>
-                <TextInput placeholder={t('confirmNewPassword')} value={confirmPassword} onChangeText={setConfirmPassword} style={styles.input} secureTextEntry placeholderTextColor={theme.text}/>
+                <View style={styles.passwordInputContainer}>
+                  <TextInput
+                    placeholder={t('newPassword')}
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                    style={styles.inputInContainer}
+                    secureTextEntry={!showNewPassword}
+                    placeholderTextColor={theme.text}
+                  />
+                  <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)} style={styles.eyeIcon}>
+                    <FontAwesome name={showNewPassword ? 'eye-slash' : 'eye'} size={20} color={theme.text} />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.passwordInputContainer}>
+                  <TextInput
+                    placeholder={t('confirmNewPassword')}
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    style={styles.inputInContainer}
+                    secureTextEntry={!showNewPassword}
+                    placeholderTextColor={theme.text}
+                  />
+                  <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)} style={styles.eyeIcon}>
+                    <FontAwesome name={showNewPassword ? 'eye-slash' : 'eye'} size={20} color={theme.text} />
+                  </TouchableOpacity>
+                </View>
                 <View style={styles.modalButtons}>
                     <Button title={t('save')} onPress={handleChangePassword} color={theme.primary} />
                     <Button title={t('cancel')} onPress={() => setPasswordModalVisible(false)} color="#888" />
@@ -662,6 +687,26 @@ const getStyles = (theme) => StyleSheet.create({
     fontSize: 16,
     color: theme.text,
     fontFamily: 'Roboto-Regular',
+  },
+  passwordInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.border,
+    borderRadius: 10,
+    marginBottom: 15,
+    backgroundColor: theme.background,
+  },
+  inputInContainer: {
+    flex: 1,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    fontSize: 16,
+    color: theme.text,
+    fontFamily: 'Roboto-Regular',
+  },
+  eyeIcon: {
+    padding: 15,
   },
   modalButtons: {
     flexDirection: 'row',

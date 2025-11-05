@@ -125,6 +125,13 @@ export default function GestionStock({ navigation }) {
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [filterCategory, setFilterCategory] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [minStock, setMinStock] = useState('');
+  const [maxStock, setMaxStock] = useState('');
+  const [categoryPickerVisible, setCategoryPickerVisible] = useState(false);
 
   /**
    * Efecto para obtener los productos de Firestore en tiempo real.
@@ -136,6 +143,21 @@ export default function GestionStock({ navigation }) {
     });
     return () => unsubscribe();
   }, []);
+
+  const categories = [...new Set(products.map(p => p.category))];
+
+  const applyFilters = () => {
+    setFilterModalVisible(false);
+  };
+
+  const clearFilters = () => {
+    setFilterCategory('');
+    setMinPrice('');
+    setMaxPrice('');
+    setMinStock('');
+    setMaxStock('');
+    setFilterModalVisible(false);
+  };
 
   /**
    * Abre el modal para añadir un nuevo producto.
@@ -233,10 +255,18 @@ export default function GestionStock({ navigation }) {
     }
   };
 
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProducts = products.filter(p => {
+    const searchMatch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        p.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const categoryMatch = filterCategory ? p.category === filterCategory : true;
+    const minPriceMatch = minPrice ? p.price >= parseFloat(minPrice) : true;
+    const maxPriceMatch = maxPrice ? p.price <= parseFloat(maxPrice) : true;
+    const minStockMatch = minStock ? p.stock >= parseInt(minStock) : true;
+    const maxStockMatch = maxStock ? p.stock <= parseInt(maxStock) : true;
+
+    return searchMatch && categoryMatch && minPriceMatch && maxPriceMatch && minStockMatch && maxStockMatch;
+  });
 
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -259,6 +289,9 @@ export default function GestionStock({ navigation }) {
                 <FontAwesome name="search" size={18} color={theme.text} style={styles.searchIcon} />
                 <TextInput style={styles.searchInput} placeholder={t('stock.searchPlaceholder')} placeholderTextColor={theme.text} value={searchQuery} onChangeText={setSearchQuery} />
               </View>
+              <TouchableOpacity onPress={() => setFilterModalVisible(true)} style={styles.filterButton}>
+                <FontAwesome name="filter" size={24} color={theme.primary} />
+              </TouchableOpacity>
             </View>
   
             {/* Lista de productos */}
@@ -284,6 +317,81 @@ export default function GestionStock({ navigation }) {
               product={selectedProduct} 
               theme={theme} 
             />
+
+            {/* Filter Modal */}
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={filterModalVisible}
+              onRequestClose={() => setFilterModalVisible(false)}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContainer}>
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitleText}>{t('stock.filter_title')}</Text>
+                    <TouchableOpacity onPress={() => setFilterModalVisible(false)}><FontAwesome name="times-circle" size={30} color={theme.text} /></TouchableOpacity>
+                  </View>
+                  <ScrollView>
+                    <Text style={styles.formLabel}>{t('stock.category_label')}</Text>
+                    <TouchableOpacity onPress={() => setCategoryPickerVisible(true)} style={styles.formInput}>
+                      <Text style={{color: theme.text}}>{filterCategory || t('stock.category_placeholder')}</Text>
+                    </TouchableOpacity>
+
+                    <Text style={styles.formLabel}>{t('stock.min_price_label')}</Text>
+                    <TextInput placeholder="0.00" value={minPrice} onChangeText={setMinPrice} style={styles.formInput} keyboardType="decimal-pad" placeholderTextColor={theme.text} />
+
+                    <Text style={styles.formLabel}>{t('stock.max_price_label')}</Text>
+                    <TextInput placeholder="100.00" value={maxPrice} onChangeText={setMaxPrice} style={styles.formInput} keyboardType="decimal-pad" placeholderTextColor={theme.text} />
+
+                    <Text style={styles.formLabel}>{t('stock.min_stock_label')}</Text>
+                    <TextInput placeholder="0" value={minStock} onChangeText={setMinStock} style={styles.formInput} keyboardType="numeric" placeholderTextColor={theme.text} />
+
+                    <Text style={styles.formLabel}>{t('stock.max_stock_label')}</Text>
+                    <TextInput placeholder="100" value={maxStock} onChangeText={setMaxStock} style={styles.formInput} keyboardType="numeric" placeholderTextColor={theme.text} />
+                  </ScrollView>
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={clearFilters}>
+                      <Text style={[styles.buttonText, {color: theme.text}]}>{t('stock.clear_filters_button')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={applyFilters}>
+                      <Text style={styles.buttonText}>{t('stock.apply_filters_button')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+
+            {/* Category Picker Modal */}
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={categoryPickerVisible}
+              onRequestClose={() => setCategoryPickerVisible(false)}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContainer}>
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitleText}>{t('stock.category_placeholder')}</Text>
+                    <TouchableOpacity onPress={() => setCategoryPickerVisible(false)}><FontAwesome name="times-circle" size={30} color={theme.text} /></TouchableOpacity>
+                  </View>
+                  <FlatList
+                    data={categories}
+                    keyExtractor={(item) => item}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity 
+                        style={styles.itemRow} 
+                        onPress={() => {
+                          setFilterCategory(item);
+                          setCategoryPickerVisible(false);
+                        }}
+                      >
+                        <Text style={styles.itemText}>{item}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </View>
+              </View>
+            </Modal>
   
             {/* Modal de confirmación de eliminación */}
             <Modal visible={isDeleteModalVisible} onRequestClose={() => setIsDeleteModalVisible(false)} transparent={true} animationType="fade">
@@ -330,6 +438,7 @@ const ProductItem = ({ item, onEdit, onDelete, theme }) => {
   const { t } = useTranslation();
   const styles = getCrudStyles(theme);
   const [expanded, setExpanded] = useState(false);
+  const totalValue = (item.price || 0) * (item.stock || 0);
 
   return (
     <View style={styles.card}>
@@ -337,23 +446,28 @@ const ProductItem = ({ item, onEdit, onDelete, theme }) => {
         <View style={styles.cardContent}>
             <Text style={styles.cardTitle}>{item.name}</Text>
             <Text style={styles.cardSubtitle}>{item.category}</Text>
-            <View style={styles.cardInfoRow}>
             <Text style={styles.cardInfo}>{t('stock.stock_label', { stock: item.stock })}</Text>
-            <Text style={styles.cardPrice}>{t('stock.price_label', { price: (item.price || 0).toFixed(2) })}</Text>
-            </View>
         </View>
       </TouchableOpacity>
       {expanded && (
-        <View style={styles.cardActions}>
-            <TouchableOpacity onPress={onEdit} style={styles.actionButton}>
-                <FontAwesome name="pencil" size={20} color={theme.text} />
-                <Text style={styles.actionButtonText}>{t('stock.edit_button')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={onDelete} style={styles.actionButton}>
-                <FontAwesome name="trash" size={20} color={theme.primary} />
-                <Text style={{...styles.actionButtonText, color: theme.primary}}>{t('stock.delete_button')}</Text>
-            </TouchableOpacity>
-        </View>
+        <>
+          <View style={[styles.cardContent, { paddingTop: 10, marginTop: 10, borderTopWidth: 1, borderTopColor: theme.border }]}>
+            <View style={styles.cardInfoRow}>
+                <Text style={styles.cardInfo}>{`${t('stock.unit_price_label')} $${item.price.toFixed(2)}`}</Text>
+                <Text style={styles.cardPrice}>{`${t('stock.price_label')} $${totalValue.toFixed(2)}`}</Text>
+            </View>
+          </View>
+          <View style={styles.cardActions}>
+              <TouchableOpacity onPress={onEdit} style={styles.actionButton}>
+                  <FontAwesome name="pencil" size={20} color={theme.text} />
+                  <Text style={styles.actionButtonText}>{t('stock.edit_button')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={onDelete} style={styles.actionButton}>
+                  <FontAwesome name="trash" size={20} color={theme.primary} />
+                  <Text style={{...styles.actionButtonText, color: theme.primary}}>{t('stock.delete_button')}</Text>
+              </TouchableOpacity>
+          </View>
+        </>
       )}
     </View>
   );

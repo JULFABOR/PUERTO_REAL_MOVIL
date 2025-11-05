@@ -71,6 +71,11 @@ const ProveedorForm = ({ visible, onClose, onSave, proveedor, theme }) => {
     }
   }, [proveedor]);
 
+  const handlePhoneChange = (text) => {
+    const numericText = text.replace(/[^\d]/g, '');
+    setPhone(numericText);
+  };
+
   /**
    * Maneja el guardado de los datos del proveedor.
    */
@@ -170,7 +175,7 @@ const ProveedorForm = ({ visible, onClose, onSave, proveedor, theme }) => {
                 <TextInput style={styles.formInput} placeholder={t('suppliers.contactPersonPlaceholder')} value={contactPerson} onChangeText={setContactPerson} placeholderTextColor={theme.text} />
 
                 <Text style={styles.formLabel}>{t('suppliers.phone')}</Text>
-                <TextInput style={styles.formInput} placeholder={t('suppliers.phonePlaceholder')} value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholderTextColor={theme.text} />
+                <TextInput style={styles.formInput} placeholder={t('suppliers.phonePlaceholder')} value={phone} onChangeText={handlePhoneChange} keyboardType="phone-pad" placeholderTextColor={theme.text} />
 
                 <Text style={styles.formLabel}>{t('suppliers.email')}</Text>
                 <TextInput style={styles.formInput} placeholder={t('suppliers.emailPlaceholder')} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" placeholderTextColor={theme.text} />
@@ -206,6 +211,9 @@ export default function GestionProveedores({ navigation }) {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [filterField, setFilterField] = useState('name');
+  const [filterValue, setFilterValue] = useState('');
 
   /**
    * Efecto para obtener los proveedores de Firestore en tiempo real.
@@ -299,9 +307,9 @@ export default function GestionProveedores({ navigation }) {
       return;
     }
 
-    const phoneRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/;
+    const phoneRegex = /^\d{9,15}$/;
     if (!phoneRegex.test(phone)) {
-      showAlert(t("suppliers.error"), t("suppliers.invalidPhone"));
+      showAlert(t("suppliers.error"), t("suppliers.invalidPhoneFormat"));
       return;
     }
 
@@ -326,10 +334,16 @@ export default function GestionProveedores({ navigation }) {
   /**
    * Filtra los proveedores en función de la consulta de búsqueda.
    */
-  const filteredProveedores = proveedores.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.contactPerson.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProveedores = proveedores.filter(p => {
+    const searchMatch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        p.contactPerson.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const filterFieldMatch = filterValue ? p[filterField]?.toLowerCase().includes(filterValue.toLowerCase()) : true;
+
+    return searchMatch && filterFieldMatch;
+  });
+
+  const filterFields = ['name', 'contactPerson', 'email'];
 
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -347,6 +361,9 @@ export default function GestionProveedores({ navigation }) {
                 <FontAwesome name="search" size={18} color={theme.text} style={styles.searchIcon} />
                 <TextInput style={styles.searchInput} placeholder={t('suppliers.search')} placeholderTextColor={theme.text} value={searchQuery} onChangeText={setSearchQuery} />
               </View>
+              <TouchableOpacity onPress={() => setFilterModalVisible(true)} style={styles.filterButton}>
+                <FontAwesome name="filter" size={24} color={theme.primary} />
+              </TouchableOpacity>
             </View>
             {/* Lista de proveedores */}
             <FlatList 
@@ -365,6 +382,50 @@ export default function GestionProveedores({ navigation }) {
           proveedor={selectedProveedor} 
           theme={theme} 
         />
+
+        {/* Filter Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={filterModalVisible}
+          onRequestClose={() => setFilterModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitleText}>{t('suppliers.filter_title')}</Text>
+                <TouchableOpacity onPress={() => setFilterModalVisible(false)}><FontAwesome name="times-circle" size={30} color={theme.text} /></TouchableOpacity>
+              </View>
+              <ScrollView>
+                <Text style={styles.formLabel}>{t('suppliers.filter_field_label')}</Text>
+                <View style={styles.segmentedControlContainer}>
+                  {filterFields.map(field => (
+                    <TouchableOpacity 
+                      key={field}
+                      style={[styles.segmentedControlButton, filterField === field && styles.segmentedControlButtonActive]}
+                      onPress={() => setFilterField(field)}
+                    >
+                      <Text style={[styles.segmentedControlText, filterField === field && styles.segmentedControlTextActive]}>
+                        {t(`suppliers.filter_field_${field}`)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <Text style={styles.formLabel}>{t('suppliers.filter_value_label')}</Text>
+                <TextInput placeholder={t('suppliers.filter_value_placeholder')} value={filterValue} onChangeText={setFilterValue} style={styles.formInput} placeholderTextColor={theme.text} />
+              </ScrollView>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => { setFilterField('name'); setFilterValue(''); setFilterModalVisible(false); }}>
+                  <Text style={[styles.buttonText, {color: theme.text}]}>{t('suppliers.clear_filters_button')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={() => setFilterModalVisible(false)}>
+                  <Text style={styles.buttonText}>{t('suppliers.apply_filters_button')}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
   
         {/* Modal de confirmación de eliminación */}
         <Modal visible={isDeleteModalVisible} onRequestClose={() => setIsDeleteModalVisible(false)} transparent={true} animationType="fade">

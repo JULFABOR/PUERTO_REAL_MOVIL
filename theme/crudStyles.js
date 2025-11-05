@@ -8,10 +8,42 @@ export const getCrudStyles = (theme) => StyleSheet.create({
   headerTitle: { fontFamily: 'Roboto-Bold', fontSize: 22, color: theme.card, flex: 1, textAlign: 'center' },
   backButton: { position: 'absolute', left: 20, zIndex: 1 },
   addButton: { position: 'absolute', right: 20, zIndex: 1 },
-  controlsContainer: { paddingHorizontal: 20, marginVertical: 15 },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderRadius: 10, paddingHorizontal: 10 },
+  controlsContainer: { 
+    paddingHorizontal: 20, 
+    marginVertical: 15,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  searchContainer: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: theme.card, 
+    borderRadius: 10, 
+    paddingHorizontal: 10,
+    flex: 1
+  },
   searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, height: 45, fontFamily: 'Roboto-Regular', fontSize: 16, color: theme.text },
+  filterButton: {
+    marginLeft: 10,
+    padding: 10,
+    backgroundColor: theme.card,
+    borderRadius: 10,
+  },
+  filtersContainer: {
+    flexDirection: 'row',
+    marginVertical: 10,
+  },
+  activeFilterButton: {
+    backgroundColor: theme.primary,
+  },
+  filterButtonText: {
+    color: theme.text,
+    fontFamily: 'Roboto-Bold',
+    fontSize: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
   listContainer: { paddingHorizontal: 20, paddingBottom: 20 },
   
   // Card Styles
@@ -115,5 +147,34 @@ export const getCrudStyles = (theme) => StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 50,
+  },
+
+  // Segmented Control
+  segmentedControlContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: theme.background,
+    borderRadius: 8,
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  segmentedControlButton: {
+    flex: 1,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segmentedControlButtonActive: {
+    backgroundColor: theme.primary,
+    borderRadius: 7,
+  },
+  segmentedControlText: {
+    fontFamily: 'Roboto-Bold',
+    fontSize: 14,
+    color: theme.text,
+  },
+  segmentedControlTextActive: {
+    color: '#fff',
   },
 });

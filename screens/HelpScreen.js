@@ -73,7 +73,7 @@ const HelpScreen = ({ navigation }) => {
 
       {/* Sección de Contacto */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t('help.contact')}</Text>
+        <Text style={styles.cardTitle}>{t('help.contactTitle')}</Text>
         <TouchableOpacity style={styles.contactButton} onPress={handleContactPress}>
             <Ionicons name="mail-outline" size={24} color={theme.primary} />
             <Text style={styles.contactText}>{t('help.contactButton')}</Text>
