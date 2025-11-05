@@ -1,0 +1,14 @@
+/**
+ * @file cloudinaryConfig.js
+ * @description Configuración para la integración con Cloudinary.
+ */
+
+/**
+ * Objeto de configuración para Cloudinary.
+ * @property {string} cloud_name - El nombre de tu nube de Cloudinary.
+ * @property {string} upload_preset - El preset de subida que has configurado en Cloudinary.
+ */
+export const cloudinaryConfig = {
+    cloud_name: 'dgfobpbau', // Reemplazar con el cloud_name
+    upload_preset: 'puertoreal_preset', // Reemplazar con el upload_preset
+};
